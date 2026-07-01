@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BATCH // Culinary Experimentation Lab</title>
+    <!-- Google Fonts for premium analogue notebook typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="brand-logo" id="brandLogo">BATCH</h1>
+                <span class="brand-sub">CULINARY LAB</span>
+            </div>
+            
+            <div class="header-center">
+                <div class="project-selector" style="justify-content: center;">
+                    <button id="goHomeBtn" class="action-btn btn-sm secondary-btn" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span>Library</span>
+                    </button>
+                    <button id="openPantryBtn" class="action-btn btn-sm primary-btn" title="Batch from the Pantry">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <span>Pantry</span>
+                    </button>
+                    <button id="openCreatorBtn" class="action-btn btn-sm secondary-btn" title="Create New Recipe">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>New</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="screen-navigation">
+                    <button class="nav-btn active" data-screen="screen-setup">1. Setup</button>
+                    <button class="nav-btn" data-screen="screen-lab">2. Active Lab</button>
+                    <button class="nav-btn" data-screen="screen-report">3. Report</button>
+                </div>
+                <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Home Screen / Library View -->
+        <main class="home-screen" id="homeScreen">
+            <div class="home-header">
+                <h2>Recipe Library</h2>
+            </div>
+            
+            <div class="search-box-container" style="max-width: 400px; margin-bottom: 24px;">
+                <input type="text" id="recipeSearchInput" class="styled-input-search" placeholder="Search recipes...">
+            </div>
+
+            <div class="recipe-grid" id="recipeGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </main>
+
+        <!-- Main Split Workspace (The Open Notebook) -->
+        <main class="main-workspace" id="mainWorkspace" style="display: none;">
+            <!-- Left Pane: Permanent Master Ingredients / Weights (Page 1) -->
+            <section class="left-pane notebook-page">
+                <div class="pane-header">
+                    <h2>Master Formulation</h2>
+                    <div class="scale-control">
+                        <span class="scale-label">Scale:</span>
+                        <button class="scale-btn" data-scale="0.5">0.5x</button>
+                        <button class="scale-btn active" data-scale="1.0">1.0x</button>
+                        <button class="scale-btn" data-scale="1.5">1.5x</button>
+                        <button class="scale-btn" data-scale="2.0">2.0x</button>
+                    </div>
+                </div>
+
+                <div class="recipe-meta-summary">
+                    <span class="meta-tag">Baseline: Standard Recipe v1.0</span>
+                    <span class="meta-tag active-tweak-tag">Batch #5 Tweak Active</span>
+                </div>
+
+                <!-- Dynamic Ingredients List -->
+                <div class="ingredients-container">
+                    <div class="ingredient-section">
+                        <h3>Zabaglione & Cream</h3>
+                        <ul class="ingredient-list" id="creamIngredients">
+                            <!-- Populated dynamically via JS -->
+                        </ul>
+                    </div>
+                    <div class="ingredient-section">
+                        <h3>Ladyfinger Soak</h3>
+                        <ul class="ingredient-list" id="soakIngredients">
+                            <!-- Populated dynamically via JS -->
+                        </ul>
+                    </div>
+                    <div class="ingredient-section">
+                        <h3>Assembly & Dusting</h3>
+                        <ul class="ingredient-list" id="assemblyIngredients">
+                            <!-- Populated dynamically via JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Active Tweak Overlay Indicator -->
+                <div class="left-pane-footer">
+                    <div class="tweak-highlight-alert">
+                        <div class="alert-indicator"></div>
+                        <span id="leftPaneTweakText">Tweak Active: Swapping standard ladyfingers for homemade almond flour Savoiardi.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Pane: Active Workspace Screens (Page 2) -->
+            <section class="right-pane notebook-page">
+                
+                <!-- Screen 1: Experiment Setup (Pre-Cook) -->
+                <div id="screen-setup" class="workspace-screen active-screen">
+                    <div class="screen-scrollable-content">
+                        <!-- Delta Focus Card -->
+                        <div class="delta-focus-card">
+                            <div class="delta-header">
+                                <div class="delta-symbol">&Delta;</div>
+                                <div class="delta-title-area">
+                                    <span class="batch-indicator">BATCH #5 SETUP</span>
+                                    <h3 id="setupTweakTitle">Variable Tweak: Swapping standard ladyfingers for homemade almond flour Savoiardi.</h3>
+                                </div>
+                                <span class="tweak-badge badge-ingredients" id="setupTweakCategory">Ingredients</span>
+                            </div>
+                            
+                            <!-- Variable Configurator inside Setup -->
+                            <div class="variable-config-panel">
+                                <p class="config-instruction">Configure your experiment variables for Batch #5:</p>
+                                <div class="config-row">
+                                    <div class="config-field">
+                                        <label for="tweakCategory">Tweak Category</label>
+                                        <select id="tweakCategory" class="styled-select-sm">
+                                            <option value="Ingredients">Ingredients (Swaps, Hydration, Flavors)</option>
+                                            <option value="Technique">Technique (Mixing, Whipping, Speed)</option>
+                                            <option value="Time-Temp">Time / Temperature (Cures, Bake Temp)</option>
+                                        </select>
+                                    </div>
+                                    <div class="config-field flex-grow">
+                                        <label for="tweakDetails">Tweak Details (Delta Focus)</label>
+                                        <input type="text" id="tweakDetails" class="styled-input" value="Swapping standard ladyfingers for homemade almond flour Savoiardi.">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Calibration System (Skill Level & Tool Checklists) -->
+                        <div class="technical-system-settings">
+                            <h3 class="section-title">Technical Parameter Engine</h3>
+                            <div class="calibration-grid">
+                                <!-- Skill Levels -->
+                                <div class="calibration-box">
+                                    <h4>1. Culinary Expertise Level</h4>
+                                    <div class="skill-levels-radio-group">
+                                        <label class="radio-label">
+                                            <input type="radio" name="skillLevelRadio" value="beginner" checked>
+                                            <span class="custom-radio-btn"></span>
+                                            <span class="radio-text">
+                                                <strong>Beginner</strong>
+                                                <small>Complete dumb in the kitchen. Hand-holding & explanations.</small>
+                                            </span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="skillLevelRadio" value="professional">
+                                            <span class="custom-radio-btn"></span>
+                                            <span class="radio-text">
+                                                <strong>Professional Chef</strong>
+                                                <small>Condensed, high-speed techniques, standard pro equipment.</small>
+                                            </span>
+                                        </label>
+                                        <label class="radio-label">
+                                            <input type="radio" name="skillLevelRadio" value="michelin">
+                                            <span class="custom-radio-btn"></span>
+                                            <span class="radio-text">
+                                                <strong>Michelin Starred</strong>
+                                                <small>Ultra-precision parameters, scientific timings, molecular plating.</small>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Tool Checklist Inventory -->
+                                <div class="calibration-box">
+                                    <h4>2. Kitchen Tool Inventory</h4>
+                                    <div class="tools-checklist" id="toolsChecklist">
+                                        <p class="ink-muted" style="font-size: 0.85rem; font-style: italic;">Loading recipe-specific tools...</p>
+                                    </div>
+                                    <div id="toolAdaptationPrompt" class="tweak-banner" style="display: none; margin-top: 12px; font-size: 0.85rem; padding: 12px; border: 1px dashed var(--accent); border-radius: 4px;">
+                                        <p style="margin-bottom: 8px;"><strong>Optimize Steps?</strong> Rebuild preparation instructions based on your selected tools?</p>
+                                        <button id="confirmAdaptBtn" class="action-btn primary-btn btn-sm" style="padding: 4px 8px; font-size: 0.75rem;">Yes, Adapt Steps</button>
+                                        <button id="dismissAdaptBtn" class="action-btn secondary-btn btn-sm" style="padding: 4px 8px; font-size: 0.75rem;">No</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Split-Screen Comparison Table -->
+                        <div class="comparison-section">
+                            <h3 class="section-title">Formulation Delta Comparison</h3>
+                            <div class="split-table-container">
+                                <div class="comparison-column baseline-column">
+                                    <div class="col-header">Baseline Control</div>
+                                    <div class="comparison-recipe-body" id="baselineComparisonBody">
+                                        <!-- Populated by JS -->
+                                    </div>
+                                </div>
+                                <div class="comparison-column test-column">
+                                    <div class="col-header">Batch #5 Test</div>
+                                    <div class="comparison-recipe-body" id="testComparisonBody">
+                                        <!-- Populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="screen-actions">
+                            <button class="action-btn secondary-btn" id="resetVariablesBtn">Reset Control</button>
+                            <button class="action-btn primary-btn" id="startBatchBtn">
+                                <span>Start Batch #5</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen 2: The Active Lab Mode (Cooking View) -->
+                <div id="screen-lab" class="workspace-screen">
+                    <div class="lab-mode-container">
+                        
+                        <!-- High-Contrast Lab Header -->
+                        <div class="lab-header">
+                            <div class="lab-batch-info">
+                                <span class="active-pulse-dot"></span>
+                                <h3 id="labProjectTitle">The Ultimate From-Scratch Tiramisu</h3>
+                                <span class="lab-batch-badge">BATCH #5 IN PROGRESS</span>
+                            </div>
+                            <!-- Macro Navigation -->
+                            <div class="macro-navigation">
+                                <button class="macro-tab active" data-phase="mise-en-place">Mise en Place</button>
+                                <button class="macro-tab" data-phase="execution">Execution</button>
+                                <button class="macro-tab" data-phase="assembly">Assembly & Aging</button>
+                            </div>
+                        </div>
+
+                        <!-- Main Focus Instruction Area -->
+                        <div class="focus-step-card" id="focusStepCard">
+                            <div class="step-progress-bar">
+                                <div class="progress-fill" id="stepProgressFill" style="width: 20%;"></div>
+                            </div>
+                            
+                            <div class="step-meta">
+                                <span class="step-number-badge" id="stepNumberLabel">Step 1 of 5</span>
+                                <span class="step-phase-badge" id="stepPhaseLabel">Mise en Place</span>
+                            </div>
+
+                            <!-- The Focus Step (Massive Typography) -->
+                            <div class="step-content-display">
+                                <p id="activeStepText" class="massive-step-text">
+                                    Measure out all ingredients. Ensure egg yolks are at room temperature and mascarpone cheese is slightly softened.
+                                </p>
+                            </div>
+
+                            <!-- Integrated Smart Timer (Conditional Display based on step) -->
+                            <div class="step-timer-container" id="stepTimerContainer" style="display: none;">
+                                <div class="timer-display-box">
+                                    <div class="timer-time" id="timerTime">04:00</div>
+                                    <div class="timer-controls">
+                                        <button class="timer-btn" id="timerPlayPauseBtn">
+                                            <svg id="timerPlayIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                            <svg id="timerPauseIcon" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="4" x2="18" y2="20"/><line x1="6" y1="4" x2="6" y2="20"/></svg>
+                                        </button>
+                                        <button class="timer-btn" id="timerResetBtn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span class="timer-label">Precision Whip Timer</span>
+                            </div>
+
+                            <!-- Dynamic Step Tweak Reminder Highlight -->
+                            <div class="step-tweak-reminder" id="stepTweakReminder">
+                                <span class="tweak-alert-label">&Delta; FOCUS REMINDER</span>
+                                <p class="tweak-alert-text" id="labTweakText">Using homemade almond flour Savoiardi. Reduce soak immersion time slightly to prevent collapsing.</p>
+                            </div>
+                        </div>
+
+                        <!-- Hands-Free & Navigation Controls -->
+                        <div class="hands-free-control-panel">
+                            <!-- Left: Gesture Detector Mock -->
+                            <div class="control-widget gesture-widget">
+                                <div class="widget-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8M6 14v-1.5a1.5 1.5 0 0 0-3 0V18a6 6 0 0 0 6 6h4a8 8 0 0 0 8-8v-2a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2"/></svg>
+                                    <h4>Hover Gesture Progress</h4>
+                                </div>
+                                <div class="gesture-simulator-zone" id="gestureSensorZone">
+                                    <div class="gesture-light" id="gestureLight"></div>
+                                    <span class="gesture-status-text" id="gestureStatus">Wave hand here to advance</span>
+                                    <button class="simulator-trigger-btn" id="simulateWaveBtn">Simulate Hand Wave</button>
+                                    <div class="webcam-mock-overlay" id="webcamMockOverlay" style="display:none;">
+                                        <video id="webcamVideo" width="120" height="90" autoplay muted></video>
+                                        <canvas id="gestureCanvas" width="120" height="90"></canvas>
+                                    </div>
+                                    <button class="camera-toggle-btn" id="toggleCameraBtn">Enable Camera Tracking</button>
+                                </div>
+                            </div>
+
+                            <!-- Center: Voice Command Status -->
+                            <div class="control-widget voice-widget">
+                                <div class="widget-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                                    <h4>Hands-Free Voice Assistant</h4>
+                                </div>
+                                <div class="voice-status-box">
+                                    <div class="mic-status-row">
+                                        <button class="mic-btn" id="voiceMicToggle">
+                                            <span class="mic-icon-pulse"></span>
+                                            <span id="micBtnText">Enable Voice Commands</span>
+                                        </button>
+                                    </div>
+                                    <div class="voice-log" id="voiceCommandLog">
+                                        <span class="log-placeholder">Try saying "Next step", "Back", or "Repeat step".</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Normal Manual Controls -->
+                            <div class="control-widget manual-widget">
+                                <div class="widget-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                    <h4>Manual Navigation</h4>
+                                </div>
+                                <div class="manual-nav-grid">
+                                    <button class="nav-arrow-btn" id="prevStepBtn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                                        <span>Back</span>
+                                    </button>
+                                    <button class="nav-arrow-btn next-primary" id="nextStepBtn">
+                                        <span>Next</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Screen Action -->
+                        <div class="screen-actions-lab">
+                            <button class="action-btn success-btn full-width" id="completeBatchBtn" style="display: none;">
+                                <span>Complete Cooking Phase</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screen 3: The Lab Report (Post-Cook Evaluation) -->
+                <div id="screen-report" class="workspace-screen">
+                    <div class="screen-scrollable-content">
+                        
+                        <div class="report-overview-header">
+                            <h2>Culinary Lab Report</h2>
+                            <p>Record sensory analytics for Batch #5 to calibrate the next iteration.</p>
+                        </div>
+
+                        <!-- Comparison Slider Section (Side-by-Side Pages) -->
+                        <div class="comparison-slider-container">
+                            <div class="vertical-split-slider">
+                                
+                                <!-- Left side: Batch #4 Reference -->
+                                <div class="slider-side left-side-reference">
+                                    <div class="side-banner ref-banner">Batch #4 Reference (Baseline Control)</div>
+                                    <div class="side-content">
+                                        <div class="ref-summary-card">
+                                            <h4>Batch #4 Review</h4>
+                                            <p class="ref-date">Completed: June 15, 2026</p>
+                                            
+                                            <div class="metric-score-display">
+                                                <div class="score-line">
+                                                    <span class="label">Texture:</span>
+                                                    <span class="value-text">Perfect Soft/Fluffy balance</span>
+                                                </div>
+                                                <div class="score-line">
+                                                    <span class="label">Structure:</span>
+                                                    <span class="value-text">Slightly collapsed after 4 hours</span>
+                                                </div>
+                                                <div class="score-line">
+                                                    <span class="label">Flavor Profile:</span>
+                                                    <span class="value-text">High sweetness, low coffee intensity</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="verdict-quote">
+                                                <strong>Verdict Notes:</strong>
+                                                <p>"The zabaglione was creamy but the store-bought ladyfingers disintegrated too quickly, causing the bottom layer to turn soggy. Coffee flavor was masked by sweetness. For Batch #5, I need custom ladyfingers and stronger espresso soak."</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right side: Batch #5 Inputs -->
+                                <div class="slider-side right-side-inputs">
+                                    <div class="side-banner input-banner">Batch #5 Experimental Analytics</div>
+                                    <div class="side-content">
+                                        <!-- Sliders -->
+                                        <div class="interactive-sliders-group">
+                                            <div class="slider-control-item">
+                                                <div class="slider-label-row">
+                                                    <span>Texture Vector</span>
+                                                    <span class="slider-val-readout" id="readoutTexture">Soft & Fluffy</span>
+                                                </div>
+                                                <input type="range" id="sliderTexture" min="1" max="5" value="3" class="culinary-range" aria-label="Texture Vector Rating">
+                                                <div class="slider-markers">
+                                                    <span>Soft / Fluffy</span>
+                                                    <span>Balanced</span>
+                                                    <span>Dense / Rich</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="slider-control-item">
+                                                <div class="slider-label-row">
+                                                    <span>Structure Integrity</span>
+                                                    <span class="slider-val-readout" id="readoutStructure">Held Perfectly</span>
+                                                </div>
+                                                <input type="range" id="sliderStructure" min="1" max="5" value="4" class="culinary-range" aria-label="Structure Integrity Rating">
+                                                <div class="slider-markers">
+                                                    <span>Collapsed</span>
+                                                    <span>Balanced</span>
+                                                    <span>Too Rigid / Dry</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="slider-control-item">
+                                                <div class="slider-label-row">
+                                                    <span>Flavor Profile Vector</span>
+                                                    <span class="slider-val-readout" id="readoutFlavor">Optimal Richness & Bitterness</span>
+                                                </div>
+                                                <input type="range" id="sliderFlavor" min="1" max="5" value="3" class="culinary-range" aria-label="Flavor Profile Rating">
+                                                <div class="slider-markers">
+                                                    <span>Cloying Sweet</span>
+                                                    <span>Balanced</span>
+                                                    <span>Intensely Bitter</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Quick-Tap Matrices -->
+                                        <div class="quick-matrix-group">
+                                            <div class="matrix-box">
+                                                <h5>Moisture Content</h5>
+                                                <div class="matrix-buttons" id="moistureMatrix">
+                                                    <button class="matrix-btn" data-val="soggy">Soggy</button>
+                                                    <button class="matrix-btn active" data-val="perfect">Perfect Hydration</button>
+                                                    <button class="matrix-btn" data-val="dry">Dry</button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="matrix-box">
+                                                <h5>Structural Integrity</h5>
+                                                <div class="matrix-buttons" id="structureMatrix">
+                                                    <button class="matrix-btn" data-val="collapsed">Collapsed</button>
+                                                    <button class="matrix-btn active" data-val="held">Held Shape</button>
+                                                    <button class="matrix-btn" data-val="rigid">Too Rigid</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Plating Photo Section -->
+                        <div class="plating-photo-section">
+                            <div class="verdict-notes-header">
+                                <h3>Plating Photo</h3>
+                                <label for="platingPhotoInput" class="action-btn secondary-btn btn-sm" style="cursor: pointer;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                    <span>Upload Photo</span>
+                                </label>
+                                <input type="file" id="platingPhotoInput" accept="image/*" style="display: none;">
+                            </div>
+                            <div id="platingPhotoPreview" class="photo-preview-container" style="display: none;">
+                                <img id="platingPhotoImage" src="" alt="Plating Preview">
+                                <button id="removePhotoBtn" class="remove-photo-btn" title="Remove Photo">&times;</button>
+                            </div>
+                        </div>
+
+                        <!-- Verdict Notes (Voice-to-Text & Notes) -->
+                        <div class="verdict-notes-section">
+                            <div class="verdict-notes-header">
+                                <h3>The Verdict</h3>
+                                <button class="action-btn secondary-btn btn-sm" id="dictateVerdictBtn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                                    <span id="dictateBtnText">Dictate Notes</span>
+                                </button>
+                            </div>
+                            <textarea id="verdictNotesInput" class="styled-textarea" placeholder="Type out exactly how it tasted with your morning coffee or as a midnight snack..."></textarea>
+                        </div>
+
+                        <!-- Next Action Prompt (Locks in Next Iteration) -->
+                        <div class="next-action-prompt-card">
+                            <div class="next-badge">CALIBRATION SYSTEM</div>
+                            <h3>Next Action Prompt</h3>
+                            <p>What should the variable adjustment be for the next batch?</p>
+                            <div class="input-lock-group">
+                                <span class="prefix-lock">For Batch #6, I should...</span>
+                                <input type="text" id="nextActionInput" class="styled-input lock-input" placeholder="e.g. adjust baking time by 5 minutes, or increase almond flour portion by 10g..." required>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="screen-actions">
+                            <button class="action-btn secondary-btn" id="exportReportBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                                <span>Export Report</span>
+                            </button>
+                            <button class="action-btn success-btn" id="saveReportBtn">
+                                <span>Lock In Batch #5 Analytics</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- Success Modal Overlay -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-card">
+            <div class="modal-icon-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+            </div>
+            <h2 id="modalTitle">Batch Saved Successfully!</h2>
+            <p id="modalBody">Batch #5 data has been locked into your master experiment tracker. Next iteration parameters are saved.</p>
+            <button class="action-btn primary-btn" id="modalCloseBtn">Close</button>
+        </div>
+    </div>
+
+    <!-- Recipe Creator Modal Overlay (NEW FUNCTIONALITY) -->
+    <div class="modal-overlay" id="recipeCreatorModal">
+        <div class="modal-card creator-modal-card">
+            <div class="creator-modal-header">
+                <h2>Create Custom Formulation</h2>
+                <p>Register a new master project and configure its technical parameters.</p>
+            </div>
+            
+            <div class="creator-scroll-body">
+                <!-- Meta Section -->
+                <div class="creator-meta-section">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="newRecipeName">Master Project Name</label>
+                            <input type="text" id="newRecipeName" class="styled-input" placeholder="e.g. Classic Sourdough Boule" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newRecipeBaseline">Baseline Control Version</label>
+                            <input type="text" id="newRecipeBaseline" class="styled-input" placeholder="e.g. Baseline Sourdough v1.0" value="Baseline Control v1.0">
+                        </div>
+                    </div>
+                    <div class="form-row-2" style="margin-top: 10px;">
+                        <div class="form-group">
+                            <label for="newRecipeBatchNum">Initial Batch Number</label>
+                            <input type="number" id="newRecipeBatchNum" class="styled-input" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="newRecipeTweakCat">Tweak Category</label>
+                            <select id="newRecipeTweakCat" class="styled-select-sm" style="width:100%;">
+                                <option value="Ingredients">Ingredients (Swaps, Hydrations)</option>
+                                <option value="Technique">Technique (Speeds, Folds)</option>
+                                <option value="Time-Temp">Time / Temperature</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label for="newRecipeTweakText">Initial Delta Tweak Details</label>
+                        <input type="text" id="newRecipeTweakText" class="styled-input" placeholder="What variable are you testing in Batch #1?">
+                    </div>
+                </div>
+
+                <!-- Ingredients Section -->
+                <div class="creator-ingredients-section">
+                    <h3>Formulation Ingredients</h3>
+                    <p class="section-subtitle">Ingredients will be mapped to the Left Pane formulation pages.</p>
+                    <div id="ingredientInputRowsContainer">
+                        <!-- Dynamic rows populated by JS -->
+                    </div>
+                    <button type="button" id="addNewIngRowBtn" class="action-btn btn-sm secondary-btn">+ Add Ingredient</button>
+                </div>
+
+                <!-- Steps Section -->
+                <div class="creator-steps-section">
+                    <h3>Adaptive Step Compiler (Technical System)</h3>
+                    <p class="section-subtitle">Define custom descriptions for each expertise level. Steps will update dynamically depending on the active skill and tools.</p>
+                    
+                    <div id="stepInputRowsContainer">
+                        <!-- Dynamic rows populated by JS -->
+                    </div>
+                    <button type="button" id="addNewStepRowBtn" class="action-btn btn-sm secondary-btn">+ Add Step</button>
+                </div>
+            </div>
+
+            <div class="creator-modal-actions">
+                <button class="action-btn secondary-btn" id="closeCreatorBtn">Cancel</button>
+                <button class="action-btn primary-btn" id="saveNewRecipeBtn">Register Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantry Modal Overlay (NEW FUNCTIONALITY) -->
+    <div class="modal-overlay" id="pantryModal">
+        <div class="modal-card pantry-modal-card">
+            <div class="pantry-modal-header" style="position: relative;">
+                <h2>Batch from the Pantry</h2>
+                <p>Type or paste the ingredients you have on hand, and we'll suggest what you can test next.</p>
+                <button class="close-sidebar-btn" id="closePantryBtn" style="position: absolute; top: 0px; right: 0px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            
+            <div class="pantry-body" style="margin-top: 16px;">
+                <textarea id="pantryIngredientsInput" class="styled-textarea" placeholder="e.g. Flour, water, yeast, salt, 2 eggs..."></textarea>
+                <button class="action-btn primary-btn full-width" id="findPantryRecipesBtn" style="margin-top: 12px; justify-content: center;">Find Recipes</button>
+                
+                <div class="pantry-results-container" id="pantryResultsContainer" style="display: none; margin-top: 24px;">
+                    <h3 class="results-header" style="font-family: var(--font-heading); margin-bottom: 12px;">Suggested Projects</h3>
+                    <div class="recipe-list-container" id="pantryRecipeList" style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="timerAudio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-200.wav" preload="auto"></audio>
+
+    <script src="app.js"></script>
+</body>
+</html>
