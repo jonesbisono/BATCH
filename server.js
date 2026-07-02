@@ -170,7 +170,8 @@ Important rules for JSON:
             }
         });
 
-        const recipeJsonStr = response.text();
+        let recipeJsonStr = response.text.trim();
+        recipeJsonStr = recipeJsonStr.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
         const recipeData = JSON.parse(recipeJsonStr);
         
         // Inject or enforce correct properties
@@ -226,7 +227,10 @@ app.post('/api/suggest-tools', async (req, res) => {
             }
         });
 
-        res.json(JSON.parse(response.text()));
+        let text = response.text.trim();
+        console.log("Raw suggested tools response:", JSON.stringify(text));
+        text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+        res.json(JSON.parse(text));
     } catch (error) {
         console.error('Error suggesting tools:', error);
         res.status(500).json({ error: 'Failed to suggest tools.', details: error.message });
@@ -286,7 +290,9 @@ app.post('/api/adapt-steps', async (req, res) => {
             }
         });
 
-        res.json(JSON.parse(response.text()));
+        let text = response.text.trim();
+        text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+        res.json(JSON.parse(text));
     } catch (error) {
         console.error('Error adapting steps:', error);
         res.status(500).json({ error: 'Failed to adapt steps.', details: error.message });
