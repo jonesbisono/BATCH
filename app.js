@@ -10,6 +10,12 @@ let RECIPE_DATABASE = {
         activeBatch: 5,
         defaultTweakCategory: "Ingredients",
         defaultTweakText: "Swapping standard ladyfingers for homemade almond flour Savoiardi.",
+        lab: "culinary",
+        ingredientSections: {
+            cream: "Zabaglione & Cream",
+            soak: "Ladyfinger Soak",
+            assembly: "Assembly & Dusting"
+        },
         ingredients: {
             cream: [
                 { name: "Egg Yolks", baseWeight: 120, unit: "g" },
@@ -144,6 +150,12 @@ let RECIPE_DATABASE = {
         activeBatch: 8,
         defaultTweakCategory: "Time-Temp",
         defaultTweakText: "Extending cold fermentation to 72 hours (vs. 24 hours baseline) for superior lactic acid flavour development.",
+        lab: "culinary",
+        ingredientSections: {
+            cream: "Dough Autolyse Base",
+            soak: "Yeast & Salt Activation",
+            assembly: "Plating & Dusting"
+        },
         ingredients: {
             cream: [
                 { 
@@ -248,6 +260,12 @@ let RECIPE_DATABASE = {
         activeBatch: 3,
         defaultTweakCategory: "Technique",
         defaultTweakText: "Performing a single fold followed by a double fold (24 layers) instead of three single folds (27 layers) to compare puff height.",
+        lab: "culinary",
+        ingredientSections: {
+            cream: "Dough Base (Détrempe)",
+            soak: "Butter Block (Beurrage)",
+            assembly: "Proofing & Baking"
+        },
         ingredients: {
             cream: [
                 { name: "Bread Flour", baseWeight: 500, unit: "g" },
@@ -341,6 +359,213 @@ let RECIPE_DATABASE = {
                 { title: "Proofing Temperature", desc: "Proofed at 24°C (75°F) for 2.5 hours to accommodate Normandy butter.", isTweak: true }
             ]
         }
+    },
+    carbonated_negroni: {
+        projectName: "Clarified & Carbonated Negroni",
+        baselineName: "Standard Negroni Control v1.0",
+        activeBatch: 3,
+        defaultTweakCategory: "Technique",
+        defaultTweakText: "Clarifying vermouth and campari via milk-washing to achieve high carbonation stability.",
+        lab: "drinks",
+        ingredientSections: {
+            cream: "Spirits & Liqueurs",
+            soak: "Clarification Agent",
+            assembly: "Dilution & Finish"
+        },
+        ingredients: {
+            cream: [
+                { name: "London Dry Gin", baseWeight: 90, unit: "g" },
+                { name: "Campari Bitter", baseWeight: 90, unit: "g" },
+                { name: "Sweet Vermouth", baseWeight: 90, unit: "g" }
+            ],
+            soak: [
+                { 
+                    name: "Whole Milk (Cold)", 
+                    baseWeight: 30, 
+                    unit: "g", 
+                    tweakHighlighted: true,
+                    baselineText: "No milk washing (cloudy control)",
+                    testText: "Whole milk washing (&Delta; Tweak)"
+                },
+                { name: "Citric Acid Solution (10%)", baseWeight: 5, unit: "g" }
+            ],
+            assembly: [
+                { name: "Purified Water (for dilution)", baseWeight: 45, unit: "g" },
+                { name: "Orange Peel Twist", baseWeight: 5, unit: "g" }
+            ]
+        },
+        steps: [
+            {
+                phase: "mise-en-place",
+                label: "Prepare Ingredients",
+                tweakReminder: "",
+                timer: 0,
+                textVariants: {
+                    beginner: "Measure all spirits and prepare the whole milk in a glass vessel.",
+                    professional: "Combine Campari and Sweet Vermouth. Cool milk to 4°C.",
+                    michelin: "Weigh out spirits on a 0.01g scale. Combine vermouth and Campari. Chill whole milk to exactly 4°C."
+                }
+            },
+            {
+                phase: "execution",
+                label: "Milk Clarification",
+                tweakReminder: "Technique Focus: Milk clarify the red bitter base to strip proteins, yielding a transparent ruby hue.",
+                timer: 600,
+                textVariants: {
+                    beginner: "Pour the combined spirits slowly into the cold milk. Add citric acid. The milk will curdle. Let it sit for 10 minutes, then filter it through a coffee filter until perfectly crystal clear.",
+                    professional: "Slowly pour spirits into milk (never milk into spirits) to curdle. Let rest 10 min. Pass through double coffee filter.",
+                    michelin: "Drop spirits into milk at 4°C. Let curdle for exactly 600s. Pass through a chilled Buchner funnel under vacuum filtration to achieve 100% clarity."
+                }
+            },
+            {
+                phase: "execution",
+                label: "Dilution and Chilling",
+                tweakReminder: "",
+                timer: 300,
+                textVariants: {
+                    beginner: "Add the gin and water to the clarified mixture. Stir well and place in the freezer until it is very cold (around 28°F / -2°C).",
+                    professional: "Incorporate gin and dilution water. Chill to -3°C.",
+                    michelin: "Blend in London Dry Gin and dilution water. Target a final sugar density of 12 Brix. Supercool the batch to -4°C in a brine bath."
+                }
+            },
+            {
+                phase: "assembly",
+                label: "Carbonation & Bottling",
+                tweakReminder: "Active Delta Tweak: Clarifying vermouth and campari via milk-washing to achieve high carbonation stability.",
+                timer: 120,
+                textVariants: {
+                    beginner: "Pour the cold cocktail into a carbonator bottle. Charge with CO2, shake, and let it sit for a minute before opening.",
+                    professional: "Carbonate cocktail using a whipping siphon or carbonator rig at 40 PSI.",
+                    michelin: "Transfer to a stainless steel carbonation keg. Pressurize with CO2 to exactly 45 PSI at -2°C. Agitate to dissolve gas. Bottle under counter-pressure."
+                },
+                toolVariants: {
+                    "tool-siphon": {
+                        beginner: "Pour the supercooled Negroni batch into your whipping siphon. Charge with 1 CO2 charger (soda charger), shake vigorously, and rest in ice bath.",
+                        professional: "Charge supercooled batch in iSi siphon with 2 CO2 chargers. Release pressure slowly to prevent foaming.",
+                        michelin: "Pour batch into siphon at -4°C. Charge with 2 CO2 chargers. Shake for 60s, rest in brine bath at -4°C for 5 minutes, then vent pressure rapidly to lock carbonation.",
+                        timer: 60
+                    }
+                }
+            },
+            {
+                phase: "assembly",
+                label: "Garnish & Serve",
+                tweakReminder: "",
+                timer: 0,
+                textVariants: {
+                    beginner: "Pour into a chilled glass over a large ice cube. Express an orange peel over the glass.",
+                    professional: "Serve in a double rocks glass over a clear ice block. Garnish with orange coin.",
+                    michelin: "Pour into a chilled crystal tumbler over a custom-cut -10°C clear ice sphere. Express orange essential oils, discard peel."
+                }
+            }
+        ],
+        comparison: {
+            baseline: [
+                { title: "Clarity Vector", desc: "Standard unclarified Negroni (cloudy red vermouth and campari dispersion)." },
+                { title: "Carbonation Level", desc: "Uncarbonated, standard stir-and-dilute ice method." }
+            ],
+            test: [
+                { title: "Clarity Vector", desc: "Milk-clarified base. Proteins strip tannins and cloudiness, yielding a transparent ruby hue.", isTweak: true },
+                { title: "Carbonation Level", desc: "Carbonated to 45 PSI at supercooled temperatures for sparkling mouthfeel.", isTweak: true }
+            ]
+        }
+    },
+    nitro_matcha: {
+        projectName: "Nitro-Charged Matcha Lab",
+        baselineName: "Whisked Matcha Latte Control v1.0",
+        activeBatch: 2,
+        defaultTweakCategory: "Technique",
+        defaultTweakText: "Nitro-charging the matcha infusion using N2O to create a thick, velvety micro-foam structure.",
+        lab: "drinks",
+        ingredientSections: {
+            cream: "Matcha Base",
+            soak: "Sweetener & Liquid",
+            assembly: "Foaming Agent & Garnish"
+        },
+        ingredients: {
+            cream: [
+                { name: "Ceremonial Grade Matcha", baseWeight: 4, unit: "g" },
+                { name: "Water (filtered at 80°C)", baseWeight: 100, unit: "ml" }
+            ],
+            soak: [
+                { name: "Oat Milk (Barista Blend)", baseWeight: 150, unit: "ml" },
+                { name: "Agave Syrup", baseWeight: 10, unit: "g" }
+            ],
+            assembly: [
+                { 
+                    name: "Xanthan Gum (stabilizer)", 
+                    baseWeight: 0.1, 
+                    unit: "g", 
+                    tweakHighlighted: true,
+                    baselineText: "No stabilizer (separated latte)",
+                    testText: "Xanthan gum emulsion stabilizer (&Delta; Tweak)"
+                }
+            ]
+        },
+        steps: [
+            {
+                phase: "mise-en-place",
+                label: "Prepare Ingredients",
+                tweakReminder: "",
+                timer: 0,
+                textVariants: {
+                    beginner: "Measure matcha, heat water, and chill oat milk.",
+                    professional: "Weigh matcha. Calibrate water temp to 80°C.",
+                    michelin: "Weigh ceremonial matcha. Heat mineral-calibrated water to exactly 78°C."
+                }
+            },
+            {
+                phase: "execution",
+                label: "Matcha Hydration",
+                tweakReminder: "",
+                timer: 180,
+                textVariants: {
+                    beginner: "Whisk the matcha powder and hot water together in a bowl using a bamboo whisk until frothy.",
+                    professional: "Whisk matcha in traditional chawan with chasen to suspend particles.",
+                    michelin: "Homogenize matcha and water at 10,000 RPM using a rotor-stator mixer to fully hydrate tea solids."
+                }
+            },
+            {
+                phase: "execution",
+                label: "Milk Emulsion",
+                tweakReminder: "",
+                timer: 120,
+                textVariants: {
+                    beginner: "Mix oat milk, agave syrup, and a tiny pinch of xanthan gum. Whisk until smooth.",
+                    professional: "Combine oat milk, agave, and xanthan gum. Blend to stabilize.",
+                    michelin: "Blend oat milk, agave, and xanthan gum (0.1g) to build a stable shear-thinning emulsion."
+                }
+            },
+            {
+                phase: "assembly",
+                label: "Charging & Pour",
+                tweakReminder: "Active Delta Tweak: Nitro-charging the matcha infusion using N2O to create a thick, velvety micro-foam structure.",
+                timer: 60,
+                textVariants: {
+                    beginner: "Pour the mixture into a whipping siphon, charge with 1 N2O charger, and shake. Pour matcha first, then foam on top.",
+                    professional: "Pour matcha into glass. Charge sweetened milk in siphon with 1 N2O. Layer foam.",
+                    michelin: "Pour matcha over clear ice block. Discharge stabilized nitrogen-oat milk foam through a flat-tip nozzle to create a crisp layered boundary."
+                },
+                toolVariants: {
+                    "tool-siphon": {
+                        beginner: "Pour the oat milk mix into your whipping siphon. Charge with 1 N2O charger, shake well, and express slowly over the matcha base.",
+                        professional: "Charge milk base in iSi siphon with 1 N2O. Layer nitrogen foam over matcha base.",
+                        michelin: "Charge stabilized milk base in iSi whip siphon with 2 N2O canisters. Purge siphon, rest in ice bath. Express through specialized draught nozzle to build a micro-foamed head.",
+                        timer: 30
+                    }
+                }
+            }
+        ],
+        comparison: {
+            baseline: [
+                { title: "Foam Stability", desc: "Whisked milk foam that collapses within 3 minutes of pouring." },
+                { title: "Aeration gas", desc: "Atmospheric air whipped into milk." }
+            ],
+            test: [
+                { title: "Foam Stability", desc: "Xanthan-stabilized emulsion maintaining velvet head for 20+ minutes.", isTweak: true },
+                { title: "Aeration gas", desc: "Pure N2O micro-bubble infusion for sweet, creamy mouthfeel without dairy.", isTweak: true }
+            ]
+        }
     }
 };
 
@@ -352,6 +577,12 @@ const PANTRY_DATABASE = {
         activeBatch: 1,
         defaultTweakCategory: "Hydration",
         defaultTweakText: "Testing high hydration dough from pantry staples.",
+        lab: "culinary",
+        ingredientSections: {
+            cream: "Base Ingredients",
+            soak: "Liquids & Yeast",
+            assembly: "Baking & Topping"
+        },
         keywords: ["flour", "yeast", "oil", "water", "salt", "olive"],
         ingredients: {
             cream: [], 
@@ -389,6 +620,12 @@ const PANTRY_DATABASE = {
         activeBatch: 1,
         defaultTweakCategory: "Time-Temp",
         defaultTweakText: "Low and slow baking to avoid rubbery eggs.",
+        lab: "culinary",
+        ingredientSections: {
+            cream: "Egg Base",
+            soak: "Vegetables & Fillers",
+            assembly: "Cheese & Garnish"
+        },
         keywords: ["egg", "onion", "cheese", "milk", "bacon", "spinach", "vegetable"],
         ingredients: {
             cream: [
@@ -417,11 +654,70 @@ const PANTRY_DATABASE = {
             baseline: [ { title: "Standard Eggs", desc: "Original baseline control ingredients and techniques." } ],
             test: [ { title: "Pantry Batch", desc: "Low and slow baking to avoid rubbery eggs.", isTweak: true } ]
         }
+    },
+    pantry_cold_brew: {
+        projectName: "Precision Cold Brew Concentrate",
+        baselineName: "Standard Steeped Brew",
+        activeBatch: 1,
+        defaultTweakCategory: "Time-Temp",
+        defaultTweakText: "Testing a warm-start 60°C bloom followed by 18-hour cold brew extraction.",
+        lab: "drinks",
+        ingredientSections: {
+            cream: "Coffee Beans",
+            soak: "Infusion Liquid",
+            assembly: "Dilution & Serving"
+        },
+        keywords: ["coffee", "water", "ice", "milk"],
+        ingredients: {
+            cream: [
+                { name: "Coffee Beans (Coarse Grind)", baseWeight: 100, unit: "g" }
+            ],
+            soak: [
+                { name: "Filtered Water (Cold)", baseWeight: 500, unit: "g" }
+            ],
+            assembly: [
+                { 
+                    name: "Hot Water (Blooming)", 
+                    baseWeight: 100, 
+                    unit: "g", 
+                    tweakHighlighted: true,
+                    baselineText: "Cold water start",
+                    testText: "60°C Hot Bloom (&Delta; Tweak)"
+                }
+            ]
+        },
+        steps: [
+            {
+                phase: "mise-en-place",
+                label: "Grind Beans",
+                timer: 0,
+                textVariants: {
+                    beginner: "Coarsely grind coffee beans. Heat 100g water.",
+                    professional: "Coarse grind (1000 microns). Heat bloom water to 60°C.",
+                    michelin: "Grind coffee to 950 microns. Calibrate bloom water to 60°C."
+                }
+            },
+            {
+                phase: "execution",
+                label: "Hot Bloom & Steep",
+                timer: 64800,
+                textVariants: {
+                    beginner: "Pour hot water over coffee to wet it for 1 minute. Add cold water, stir, and steep in fridge for 18 hours.",
+                    professional: "Bloom with 60°C water for 60s, top with cold water. Cold steep at 4°C for 18 hours.",
+                    michelin: "Vacuum seal coffee and bloom water for 60s. Add cold water, submerge in water bath at 4°C for 18 hours."
+                }
+            }
+        ],
+        comparison: {
+            baseline: [ { title: "Acidity Level", desc: "Low acidity but less volatile aroma compounds." } ],
+            test: [ { title: "Acidity Level", desc: "Warm bloom extracts highly volatile floral notes while retaining low-acidity base.", isTweak: true } ]
+        }
     }
 };
 
 // 2. STATE MANAGER (Now tracking Skill Levels and Tools checklist)
 const State = {
+    activeLab: "culinary", // culinary, drinks
     activeProjectId: "tiramisu",
     scaleMultiplier: 1.0,
     currentTweakCategory: "Ingredients",
@@ -431,6 +727,8 @@ const State = {
     // NEW Technical Engine parameters
     skillLevel: "beginner", // beginner, professional, michelin
     activeTools: new Set(["tool-whisk", "tool-doubleboiler"]), // Default tools
+    toolsInventory: [],
+    toolPhotoBase64: null,
     
     // Cooking view step state
     currentStepIndex: 0,
@@ -476,6 +774,15 @@ const UI = {
     pantryRecipeList: document.getElementById("pantryRecipeList"),
     screenNavButtons: document.querySelectorAll(".nav-btn"),
     screens: document.querySelectorAll(".workspace-screen"),
+    
+    // Lab switchers & Dynamic UI titles
+    culinaryLabTab: document.getElementById("culinaryLabTab"),
+    drinksLabTab: document.getElementById("drinksLabTab"),
+    ingredientSecHeader1: document.getElementById("ingredientSecHeader1"),
+    ingredientSecHeader2: document.getElementById("ingredientSecHeader2"),
+    ingredientSecHeader3: document.getElementById("ingredientSecHeader3"),
+    creatorModalTitle: document.getElementById("creatorModalTitle"),
+    creatorModalDesc: document.getElementById("creatorModalDesc"),
     
     // Scale controls
     scaleButtons: document.querySelectorAll(".scale-btn"),
@@ -578,7 +885,22 @@ const UI = {
     addNewIngRowBtn: document.getElementById("addNewIngRowBtn"),
     stepInputRowsContainer: document.getElementById("stepInputRowsContainer"),
     addNewStepRowBtn: document.getElementById("addNewStepRowBtn"),
-    saveNewRecipeBtn: document.getElementById("saveNewRecipeBtn")
+    saveNewRecipeBtn: document.getElementById("saveNewRecipeBtn"),
+    
+    // Kitchen Tools elements
+    openToolsBtn: document.getElementById("openToolsBtn"),
+    toolsScreen: document.getElementById("toolsScreen"),
+    toolsGrid: document.getElementById("toolsGrid"),
+    addNewToolBtn: document.getElementById("addNewToolBtn"),
+    toolCreatorModal: document.getElementById("toolCreatorModal"),
+    closeToolCreatorBtn: document.getElementById("closeToolCreatorBtn"),
+    saveNewToolBtn: document.getElementById("saveNewToolBtn"),
+    toolPhotoInput: document.getElementById("toolPhotoInput"),
+    toolPhotoPreview: document.getElementById("toolPhotoPreview"),
+    toolPhotoImage: document.getElementById("toolPhotoImage"),
+    removeToolPhotoBtn: document.getElementById("removeToolPhotoBtn"),
+    newToolName: document.getElementById("newToolName"),
+    newToolDesc: document.getElementById("newToolDesc")
 };
 
 // 4. CORE APP FUNCTIONS
@@ -586,6 +908,7 @@ const UI = {
 // Initialize Application
 function init() {
     loadUnifiedDatabase();
+    loadToolsInventory();
     setupEventHandlers();
     
     // Show home screen
@@ -633,6 +956,10 @@ function renderRecipeLibrary(filter = "") {
     
     for (let key in RECIPE_DATABASE) {
         const project = RECIPE_DATABASE[key];
+        
+        // Filter by active lab mode
+        const projectLab = project.lab || "culinary";
+        if (projectLab !== State.activeLab) continue;
         
         // Filter by text
         if (filter) {
@@ -719,6 +1046,24 @@ function loadProjectState(projectId) {
 function renderIngredients() {
     const project = RECIPE_DATABASE[State.activeProjectId];
     const scale = State.scaleMultiplier;
+    
+    // Dynamically set Left Pane section headers based on recipe metadata
+    const getSectionHeader = (secKey, fallback) => {
+        if (project.ingredientSections && project.ingredientSections[secKey]) {
+            return project.ingredientSections[secKey];
+        }
+        return fallback;
+    };
+    
+    if (UI.ingredientSecHeader1) {
+        UI.ingredientSecHeader1.textContent = getSectionHeader("cream", "Zabaglione & Cream");
+    }
+    if (UI.ingredientSecHeader2) {
+        UI.ingredientSecHeader2.textContent = getSectionHeader("soak", "Ladyfinger Soak");
+    }
+    if (UI.ingredientSecHeader3) {
+        UI.ingredientSecHeader3.textContent = getSectionHeader("assembly", "Assembly & Dusting");
+    }
     
     // Map list render
     const populateList = (sectionKey, element) => {
@@ -1225,6 +1570,34 @@ function triggerWaveGesture() {
 // 7. EVENT HANDLERS SETUP
 function setupEventHandlers() {
     
+    // Lab Tab Switchers
+    const selectLab = (labId) => {
+        State.activeLab = labId;
+        
+        // Update active class on tabs
+        if (labId === "drinks") {
+            UI.drinksLabTab.classList.add("active");
+            UI.culinaryLabTab.classList.remove("active");
+            document.documentElement.classList.add("theme-drinks");
+        } else {
+            UI.culinaryLabTab.classList.add("active");
+            UI.drinksLabTab.classList.remove("active");
+            document.documentElement.classList.remove("theme-drinks");
+        }
+        
+        // If workspace is active, go home
+        UI.mainWorkspace.style.display = "none";
+        if (UI.toolsScreen) UI.toolsScreen.style.display = "none";
+        UI.goHomeBtn.style.display = "none";
+        UI.homeScreen.style.display = "block";
+        
+        // Rerender home screen
+        renderRecipeLibrary(UI.recipeSearchInput.value);
+    };
+    
+    UI.culinaryLabTab.addEventListener("click", () => selectLab("culinary"));
+    UI.drinksLabTab.addEventListener("click", () => selectLab("drinks"));
+
     // Theme Toggle
     UI.themeToggle.addEventListener("click", () => {
         const activeTheme = document.documentElement.getAttribute("data-theme");
@@ -1236,6 +1609,7 @@ function setupEventHandlers() {
     // Home button navigation
     UI.goHomeBtn.addEventListener("click", () => {
         UI.mainWorkspace.style.display = "none";
+        if (UI.toolsScreen) UI.toolsScreen.style.display = "none";
         UI.goHomeBtn.style.display = "none";
         UI.homeScreen.style.display = "block";
         renderRecipeLibrary(UI.recipeSearchInput.value);
@@ -1418,6 +1792,23 @@ function setupEventHandlers() {
     // RECIPE CREATOR MODAL HANDLERS (NEW FUNCTIONALITY)
     // ==========================================
     UI.openCreatorBtn.addEventListener("click", () => {
+        if (UI.creatorModalTitle && UI.creatorModalDesc) {
+            if (State.activeLab === "drinks") {
+                UI.creatorModalTitle.textContent = "Create Custom Beverage Formulation";
+                UI.creatorModalDesc.textContent = "Register a new master drinks project and configure its technical parameters.";
+            } else {
+                UI.creatorModalTitle.textContent = "Create Custom Culinary Formulation";
+                UI.creatorModalDesc.textContent = "Register a new master culinary project and configure its technical parameters.";
+            }
+        }
+        
+        // Refresh default rows so placeholders update correctly
+        UI.ingredientInputRowsContainer.innerHTML = "";
+        addIngredientInputRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+        
+        UI.stepInputRowsContainer.innerHTML = "";
+        addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+        
         UI.recipeCreatorModal.classList.add("active");
     });
     
@@ -1475,6 +1866,92 @@ function setupEventHandlers() {
     UI.findPantryRecipesBtn.addEventListener("click", () => {
         analyzePantryIngredients(UI.pantryIngredientsInput.value);
     });
+
+    // ==========================================
+    // KITCHEN TOOLS HANDLERS (NEW FUNCTIONALITY)
+    // ==========================================
+    if (UI.openToolsBtn) {
+        UI.openToolsBtn.addEventListener("click", () => {
+            UI.mainWorkspace.style.display = "none";
+            UI.homeScreen.style.display = "none";
+            UI.toolsScreen.style.display = "block";
+            UI.goHomeBtn.style.display = "flex";
+            renderToolsGrid();
+        });
+    }
+
+    if (UI.addNewToolBtn) {
+        UI.addNewToolBtn.addEventListener("click", () => {
+            // Clear inputs
+            UI.newToolName.value = "";
+            UI.newToolDesc.value = "";
+            UI.toolPhotoInput.value = "";
+            UI.toolPhotoPreview.style.display = "none";
+            UI.toolPhotoImage.src = "";
+            State.toolPhotoBase64 = null;
+            
+            UI.toolCreatorModal.classList.add("active");
+        });
+    }
+
+    if (UI.closeToolCreatorBtn) {
+        UI.closeToolCreatorBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            UI.toolCreatorModal.classList.remove("active");
+        });
+    }
+
+    if (UI.toolPhotoInput) {
+        UI.toolPhotoInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const base64Str = evt.target.result;
+                    State.toolPhotoBase64 = base64Str;
+                    UI.toolPhotoImage.src = base64Str;
+                    UI.toolPhotoPreview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (UI.removeToolPhotoBtn) {
+        UI.removeToolPhotoBtn.addEventListener("click", () => {
+            State.toolPhotoBase64 = null;
+            UI.toolPhotoImage.src = "";
+            UI.toolPhotoPreview.style.display = "none";
+            UI.toolPhotoInput.value = "";
+        });
+    }
+
+    if (UI.saveNewToolBtn) {
+        UI.saveNewToolBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            
+            const name = UI.newToolName.value.trim();
+            const desc = UI.newToolDesc.value.trim();
+            
+            if (!name || !desc) {
+                alert("Please fill in the tool name and description.");
+                return;
+            }
+            
+            const newToolObj = {
+                id: "tool-custom-" + Date.now(),
+                name: name,
+                description: desc,
+                photo: State.toolPhotoBase64
+            };
+            
+            State.toolsInventory.push(newToolObj);
+            saveToolsInventory();
+            renderToolsGrid();
+            
+            UI.toolCreatorModal.classList.remove("active");
+        });
+    }
 }
 
 // Add Ingredient Row in Recipe Creator Modal (NEW FUNCTIONALITY)
@@ -1482,21 +1959,25 @@ function addIngredientInputRow(name, weight, unit) {
     const row = document.createElement("div");
     row.className = "ing-input-row";
     
+    const label1 = State.activeLab === "drinks" ? "Section 1 (Spirits / Base)" : "Section 1 (Cream / Flour)";
+    const label2 = State.activeLab === "drinks" ? "Section 2 (Sweeteners / Modifiers)" : "Section 2 (Soak / Liquid)";
+    const label3 = State.activeLab === "drinks" ? "Section 3 (Garnish / Dilution)" : "Section 3 (Assembly)";
+    
     row.innerHTML = `
         <div class="form-group">
-            <input type="text" class="styled-input ing-name-input" placeholder="e.g. Mascarpone" value="${name}" required>
+            <input type="text" class="styled-input ing-name-input" placeholder="Ingredient name (e.g., ${State.activeLab === 'drinks' ? 'Gin' : 'Mascarpone'})" value="${name}" required>
         </div>
         <div class="form-group">
-            <input type="number" class="styled-input ing-weight-input" placeholder="500" value="${weight}" required>
+            <input type="number" class="styled-input ing-weight-input" placeholder="Amount (e.g., ${State.activeLab === 'drinks' ? '90' : '500'})" value="${weight}" required>
         </div>
         <div class="form-group">
-            <input type="text" class="styled-input ing-unit-input" placeholder="g" value="${unit}">
+            <input type="text" class="styled-input ing-unit-input" placeholder="Unit (e.g., ${State.activeLab === 'drinks' ? 'ml' : 'g'})" value="${unit}">
         </div>
         <div class="form-group">
             <select class="styled-select-sm ing-sec-input">
-                <option value="cream">Section 1 (Cream/Flour)</option>
-                <option value="soak">Section 2 (Soak/Liquid)</option>
-                <option value="assembly">Section 3 (Assembly)</option>
+                <option value="cream">${label1}</option>
+                <option value="soak">${label2}</option>
+                <option value="assembly">${label3}</option>
             </select>
         </div>
         <button type="button" class="remove-row-btn" title="Remove Ingredient">X</button>
@@ -1526,7 +2007,7 @@ function addStepInputRow(label, phase, defaultText, beginnerText, proText, miche
             <div class="step-row-flex">
                 <div class="form-group">
                     <label>Step Label</label>
-                    <input type="text" class="styled-input step-label-input" placeholder="e.g. Whisk Zabaglione" value="${label}" required>
+                    <input type="text" class="styled-input step-label-input" placeholder="Step title (e.g., ${State.activeLab === 'drinks' ? 'Clarify Base' : 'Whisk Cream'})" value="${label}" required>
                 </div>
                 <div class="form-group">
                     <label>Cooking Phase</label>
@@ -1538,28 +2019,28 @@ function addStepInputRow(label, phase, defaultText, beginnerText, proText, miche
                 </div>
                 <div class="form-group">
                     <label>Timer (secs)</label>
-                    <input type="number" class="styled-input step-timer-input" placeholder="e.g. 240" value="${timer}">
+                    <input type="number" class="styled-input step-timer-input" placeholder="Timer in seconds (e.g. 240)" value="${timer}">
                 </div>
             </div>
             
             <div class="form-group" style="margin-top:6px;">
                 <label>Step Tweak Reminder (Delta Highlight)</label>
-                <input type="text" class="styled-input step-tweak-input" placeholder="Leave blank if no dynamic tweak highlight is needed.">
+                <input type="text" class="styled-input step-tweak-input" placeholder="What should be calibrated? (e.g., Reduced soak time to prevent collapsing)">
             </div>
 
             <div class="form-group" style="margin-top:6px;">
-                <label>1. Beginner Explanation (Complete Dumb)</label>
-                <textarea class="styled-textarea step-beg-input" placeholder="Detailed step-by-step description for beginners..." style="min-height:45px;"></textarea>
+                <label>1. Laidback / Home-kitchen Explanation</label>
+                <textarea class="styled-textarea step-beg-input" placeholder="Simple, straightforward instructions for standard home kitchens..." style="min-height:45px;"></textarea>
             </div>
             
             <div class="form-group" style="margin-top:6px;">
-                <label>2. Professional description</label>
-                <textarea class="styled-textarea step-pro-input" placeholder="Standard terminology and instructions for professional chefs..." style="min-height:45px;"></textarea>
+                <label>2. Elevated / Restaurant-kitchen Directions</label>
+                <textarea class="styled-textarea step-pro-input" placeholder="Concise directions using culinary terms and professional techniques..." style="min-height:45px;"></textarea>
             </div>
 
             <div class="form-group" style="margin-top:6px;">
-                <label>3. Michelin Star details</label>
-                <textarea class="styled-textarea step-mich-input" placeholder="Ultra-precision details, molecular parameters, and plating instructions..." style="min-height:45px;"></textarea>
+                <label>3. Precise / Kitchen-lab Details</label>
+                <textarea class="styled-textarea step-mich-input" placeholder="Ultra-precise parameters (e.g., core temperatures, weights, vacuum pressure, molecular plating)..." style="min-height:45px;"></textarea>
             </div>
         </div>
     `;
@@ -1670,6 +2151,16 @@ function saveCreatedRecipe(e) {
         defaultTweakText: tweakDetails,
         ingredients: ingredients,
         steps: steps,
+        lab: State.activeLab,
+        ingredientSections: State.activeLab === "drinks" ? {
+            cream: "Spirits & Liqueurs",
+            soak: "Sweeteners & Modifiers",
+            assembly: "Dilution & Garnish"
+        } : {
+            cream: "Cream & Flour",
+            soak: "Soak & Liquids",
+            assembly: "Assembly & Dusting"
+        },
         // Simple default comparison tables
         comparison: {
             baseline: [
@@ -1726,13 +2217,16 @@ async function analyzePantryIngredients(text) {
     }
 
     UI.pantryResultsContainer.style.display = "block";
-    UI.pantryRecipeList.innerHTML = "<p class='ink-muted'>Consulting Culinary God via Gemini... please wait...</p>";
+    UI.pantryRecipeList.innerHTML = `<p class='ink-muted'>Consulting ${State.activeLab === 'drinks' ? 'Master Mixologist' : 'Culinary God'} via Gemini... please wait...</p>`;
 
     try {
         const response = await fetch('/api/generate-recipe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ingredients: text })
+            body: JSON.stringify({ 
+                ingredients: text,
+                type: State.activeLab
+            })
         });
 
         if (!response.ok) {
@@ -2147,6 +2641,104 @@ async function adaptRecipeStepsToTools() {
             UI.toolAdaptationPrompt.style.display = "none";
         });
     }
+}
+
+// =========================================================================
+// KITCHEN TOOLS INVENTORY STATE & RENDERING (NEW FUNCTIONALITY)
+// =========================================================================
+
+const DEFAULT_TOOLS = [
+    {
+        id: "tool-whisk",
+        name: "Balloon Whisk",
+        description: "A wire balloon whisk for manual whipping, emulsifying, and folding ingredients.",
+        photo: null
+    },
+    {
+        id: "tool-mixer",
+        name: "Stand Mixer",
+        description: "Planetary stand mixer with hook and paddle attachments for kneading and whipping.",
+        photo: null
+    },
+    {
+        id: "tool-doubleboiler",
+        name: "Double Boiler Setup",
+        description: "Bain-marie setup for gentle indirect heat, tempering chocolate, or whipping custards.",
+        photo: null
+    },
+    {
+        id: "tool-siphon",
+        name: "iSi Whipping Siphon",
+        description: "Pressurized nitrous oxide (N2O) gas charging siphon for rapid foams and infusions.",
+        photo: null
+    },
+    {
+        id: "tool-chambervac",
+        name: "Chamber Vacuum Sealer",
+        description: "Chamber sealer for fast marinating, compression, de-aerating, and uniform sheeting.",
+        photo: null
+    }
+];
+
+function loadToolsInventory() {
+    const raw = localStorage.getItem("BATCH_TOOLS_INVENTORY_V1");
+    if (raw) {
+        try {
+            State.toolsInventory = JSON.parse(raw);
+        } catch (e) {
+            console.error("Error parsing tools inventory:", e);
+            State.toolsInventory = [...DEFAULT_TOOLS];
+        }
+    } else {
+        State.toolsInventory = [...DEFAULT_TOOLS];
+    }
+}
+
+function saveToolsInventory() {
+    localStorage.setItem("BATCH_TOOLS_INVENTORY_V1", JSON.stringify(State.toolsInventory));
+}
+
+function renderToolsGrid() {
+    if (!UI.toolsGrid) return;
+    
+    UI.toolsGrid.innerHTML = "";
+    
+    State.toolsInventory.forEach(tool => {
+        const card = document.createElement("div");
+        card.className = "tool-card";
+        
+        let imgContent = "";
+        if (tool.photo) {
+            imgContent = `<img src="${tool.photo}" class="tool-card-img" alt="${tool.name}">`;
+        } else {
+            imgContent = `
+                <svg class="tool-card-fallback-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+            `;
+        }
+        
+        card.innerHTML = `
+            <div class="tool-card-img-container">
+                ${imgContent}
+            </div>
+            <div class="tool-card-info">
+                <h3>${tool.name}</h3>
+                <p>${tool.description}</p>
+                <button class="remove-tool-btn" data-id="${tool.id}">Remove</button>
+            </div>
+        `;
+        
+        card.querySelector(".remove-tool-btn").addEventListener("click", () => {
+            if (confirm(`Are you sure you want to remove "${tool.name}" from your kitchen inventory?`)) {
+                State.toolsInventory = State.toolsInventory.filter(t => t.id !== tool.id);
+                saveToolsInventory();
+                renderToolsGrid();
+            }
+        });
+        
+        UI.toolsGrid.appendChild(card);
+    });
 }
 
 // Initialize on page load

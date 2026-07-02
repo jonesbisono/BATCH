@@ -61,6 +61,17 @@
     --page-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
 }
 
+/* Drinks Lab Theme Overrides (Warm Amber/Copper Palette) */
+[data-theme="light"].theme-drinks {
+    --accent: #b35a2b; /* Warm Copper Amber */
+    --accent-light: #fbf0ea;
+}
+
+[data-theme="dark"].theme-drinks {
+    --accent: #e58753; /* Glowing Amber */
+    --accent-light: #281c15;
+}
+
 /* Base resets */
 * {
     box-sizing: border-box;
@@ -118,6 +129,47 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 2px;
+}
+
+.lab-switcher {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.lab-tab {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    color: var(--ink-subtle);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: 2px 4px;
+    position: relative;
+    outline: none;
+}
+
+.lab-tab:hover {
+    color: var(--ink-main);
+}
+
+.lab-tab.active {
+    color: var(--accent);
+}
+
+.lab-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 4px;
+    right: 4px;
+    height: 2px;
+    background-color: var(--accent);
+    transition: background-color var(--transition-normal);
 }
 
 .brand-logo {
@@ -2120,4 +2172,92 @@ body {
 /* Webcam Mirroring */
 .webcam-mock-overlay video, .webcam-mock-overlay canvas {
     transform: scaleX(-1);
+}
+
+/* Kitchen Tools Database Styles */
+.tools-screen {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.tool-card {
+    background: var(--bg-page);
+    border: 1px solid var(--rule-color);
+    border-radius: 4px;
+    box-shadow: var(--page-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: var(--transition-normal);
+}
+
+.tool-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.tool-card-img-container {
+    height: 140px;
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--rule-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tool-card-fallback-svg {
+    width: 40px;
+    height: 40px;
+    color: var(--ink-subtle);
+    opacity: 0.7;
+}
+
+.tool-card-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 8px;
+}
+
+.tool-card-info h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink-main);
+}
+
+.tool-card-info p {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    line-height: 1.4;
+    flex-grow: 1;
+}
+
+.remove-tool-btn {
+    align-self: flex-start;
+    margin-top: 8px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    color: var(--tweak-color);
+    border: 1px dashed var(--tweak-color);
+    background: transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.remove-tool-btn:hover {
+    background: var(--tweak-bg);
+    color: var(--tweak-color);
 }

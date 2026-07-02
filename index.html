@@ -18,7 +18,10 @@
         <header class="app-header">
             <div class="header-left">
                 <h1 class="brand-logo" id="brandLogo">BATCH</h1>
-                <span class="brand-sub">CULINARY LAB</span>
+                <div class="lab-switcher">
+                    <button class="lab-tab active" id="culinaryLabTab" data-lab="culinary">CULINARY LAB</button>
+                    <button class="lab-tab" id="drinksLabTab" data-lab="drinks">DRINKS LAB</button>
+                </div>
             </div>
             
             <div class="header-center">
@@ -30,6 +33,10 @@
                     <button id="openPantryBtn" class="action-btn btn-sm primary-btn" title="Batch from the Pantry">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         <span>Pantry</span>
+                    </button>
+                    <button id="openToolsBtn" class="action-btn btn-sm secondary-btn" title="Kitchen Tools Inventory">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        <span>Tools</span>
                     </button>
                     <button id="openCreatorBtn" class="action-btn btn-sm secondary-btn" title="Create New Recipe">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -66,6 +73,20 @@
             </div>
         </main>
 
+        <!-- Tools Inventory View -->
+        <main class="tools-screen home-screen" id="toolsScreen" style="display: none;">
+            <div class="home-header">
+                <h2>Kitchen Tools Database</h2>
+                <button id="addNewToolBtn" class="action-btn btn-sm primary-btn">+ Add Tool</button>
+            </div>
+            
+            <p class="ink-muted" style="margin-bottom: 24px; font-size: 0.9rem;">Manage and calibrate your kitchen and bar tool inventory. These tools integrate with the technical parameter engine to adapt recipe steps.</p>
+
+            <div class="recipe-grid" id="toolsGrid">
+                <!-- Dynamically populated tool cards -->
+            </div>
+        </main>
+
         <!-- Main Split Workspace (The Open Notebook) -->
         <main class="main-workspace" id="mainWorkspace" style="display: none;">
             <!-- Left Pane: Permanent Master Ingredients / Weights (Page 1) -->
@@ -89,19 +110,19 @@
                 <!-- Dynamic Ingredients List -->
                 <div class="ingredients-container">
                     <div class="ingredient-section">
-                        <h3>Zabaglione & Cream</h3>
+                        <h3 id="ingredientSecHeader1">Zabaglione & Cream</h3>
                         <ul class="ingredient-list" id="creamIngredients">
                             <!-- Populated dynamically via JS -->
                         </ul>
                     </div>
                     <div class="ingredient-section">
-                        <h3>Ladyfinger Soak</h3>
+                        <h3 id="ingredientSecHeader2">Ladyfinger Soak</h3>
                         <ul class="ingredient-list" id="soakIngredients">
                             <!-- Populated dynamically via JS -->
                         </ul>
                     </div>
                     <div class="ingredient-section">
-                        <h3>Assembly & Dusting</h3>
+                        <h3 id="ingredientSecHeader3">Assembly & Dusting</h3>
                         <ul class="ingredient-list" id="assemblyIngredients">
                             <!-- Populated dynamically via JS -->
                         </ul>
@@ -160,30 +181,30 @@
                             <div class="calibration-grid">
                                 <!-- Skill Levels -->
                                 <div class="calibration-box">
-                                    <h4>1. Culinary Expertise Level</h4>
+                                    <h4>1. Technical Calibration Level</h4>
                                     <div class="skill-levels-radio-group">
                                         <label class="radio-label">
                                             <input type="radio" name="skillLevelRadio" value="beginner" checked>
                                             <span class="custom-radio-btn"></span>
                                             <span class="radio-text">
-                                                <strong>Beginner</strong>
-                                                <small>Complete dumb in the kitchen. Hand-holding & explanations.</small>
+                                                <strong>Laidback / Home-kitchen</strong>
+                                                <small>Straightforward preparation, simple tools, and easy-to-follow directions.</small>
                                             </span>
                                         </label>
                                         <label class="radio-label">
                                             <input type="radio" name="skillLevelRadio" value="professional">
                                             <span class="custom-radio-btn"></span>
                                             <span class="radio-text">
-                                                <strong>Professional Chef</strong>
-                                                <small>Condensed, high-speed techniques, standard pro equipment.</small>
+                                                <strong>Elevated / Restaurant-kitchen</strong>
+                                                <small>Culinary terminology, professional techniques, and high-quality plating.</small>
                                             </span>
                                         </label>
                                         <label class="radio-label">
                                             <input type="radio" name="skillLevelRadio" value="michelin">
                                             <span class="custom-radio-btn"></span>
                                             <span class="radio-text">
-                                                <strong>Michelin Starred</strong>
-                                                <small>Ultra-precision parameters, scientific timings, molecular plating.</small>
+                                                <strong>Precise / Kitchen-lab</strong>
+                                                <small>Ultra-precise measurements, core temperatures, and advanced parameters.</small>
                                             </span>
                                         </label>
                                     </div>
@@ -552,8 +573,8 @@
     <div class="modal-overlay" id="recipeCreatorModal">
         <div class="modal-card creator-modal-card">
             <div class="creator-modal-header">
-                <h2>Create Custom Formulation</h2>
-                <p>Register a new master project and configure its technical parameters.</p>
+                <h2 id="creatorModalTitle">Create Custom Formulation</h2>
+                <p id="creatorModalDesc">Register a new master project and configure its technical parameters.</p>
             </div>
             
             <div class="creator-scroll-body">
@@ -562,11 +583,11 @@
                     <div class="form-row-2">
                         <div class="form-group">
                             <label for="newRecipeName">Master Project Name</label>
-                            <input type="text" id="newRecipeName" class="styled-input" placeholder="e.g. Classic Sourdough Boule" required>
+                            <input type="text" id="newRecipeName" class="styled-input" placeholder="Enter formulation name (e.g., Neapolitan Pizza, Carbonated Negroni)" required>
                         </div>
                         <div class="form-group">
                             <label for="newRecipeBaseline">Baseline Control Version</label>
-                            <input type="text" id="newRecipeBaseline" class="styled-input" placeholder="e.g. Baseline Sourdough v1.0" value="Baseline Control v1.0">
+                            <input type="text" id="newRecipeBaseline" class="styled-input" placeholder="Enter baseline control name (e.g., Control v1.0)" value="Baseline Control v1.0">
                         </div>
                     </div>
                     <div class="form-row-2" style="margin-top: 10px;">
@@ -639,6 +660,51 @@
                         <!-- Populated by JS -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Creator Modal Overlay -->
+    <div class="modal-overlay" id="toolCreatorModal">
+        <div class="modal-card creator-modal-card" style="max-width: 460px;">
+            <div class="creator-modal-header">
+                <h2>Register Kitchen Tool</h2>
+                <p>Add a new tool to your lab inventory for step adaptation calibration.</p>
+            </div>
+            
+            <div class="creator-scroll-body" style="padding-top: 10px;">
+                <form id="toolCreatorForm" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="newToolName">Tool Name</label>
+                        <input type="text" id="newToolName" class="styled-input" placeholder="e.g. iSi Whipping Siphon, Sous-Vide Circulator" required>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="newToolDesc">Brief Description</label>
+                        <textarea id="newToolDesc" class="styled-textarea" placeholder="Describe what it is used for and its precision parameters..." style="min-height: 80px;" required></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Tool Photo</label>
+                        <div class="tool-photo-upload-container" style="margin-top: 6px;">
+                            <label for="toolPhotoInput" class="action-btn secondary-btn btn-sm" style="cursor: pointer; display: inline-flex; gap: 6px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                <span>Upload Photo</span>
+                            </label>
+                            <input type="file" id="toolPhotoInput" accept="image/*" style="display: none;">
+                            
+                            <div id="toolPhotoPreview" class="photo-preview-container" style="display: none; margin-top: 10px; position: relative; max-width: 150px; border-radius: 4px; overflow: hidden; border: 1px solid var(--rule-color);">
+                                <img id="toolPhotoImage" src="" alt="Tool Photo Preview" style="width: 100%; height: auto; display: block;">
+                                <button type="button" id="removeToolPhotoBtn" class="remove-photo-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="creator-modal-actions" style="margin-top: 20px;">
+                <button class="action-btn secondary-btn" id="closeToolCreatorBtn">Cancel</button>
+                <button class="action-btn primary-btn" id="saveNewToolBtn">Add to Inventory</button>
             </div>
         </div>
     </div>

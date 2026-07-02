@@ -81,7 +81,7 @@ Important rules for JSON:
 
 app.post('/api/generate-recipe', async (req, res) => {
     try {
-        const { ingredients } = req.body;
+        const { ingredients, type } = req.body;
         
         if (!ingredients) {
             return res.status(400).json({ error: 'Ingredients are required.' });
@@ -94,17 +94,98 @@ app.post('/api/generate-recipe', async (req, res) => {
         // Initialize client lazily per-request so server starts even without a key
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+        let systemPrompt = SYSTEM_PROMPT;
+        let userInstruction = `Please create a recipe using these ingredients: ${ingredients}`;
+        
+        if (type === 'drinks') {
+            systemPrompt = `
+You are the greatest mixologist, bar director, and liquid chemist in the world, with deep knowledge of molecular gastronomy, cocktail history, coffee and tea chemistry, and modern bar techniques (drawing from Harold McGee's "On Food and Cooking", Dave Arnold's "Liquid Intelligence", and Grant Achatz's "The Aviary Cocktail Book").
+
+When given a list of pantry/bar ingredients, you must generate a BATCH drinks lab compatible JSON drinks/beverage formulation object.
+The output MUST be pure JSON with NO markdown formatting, NO backticks, and NO additional text.
+
+The JSON schema must exactly follow this structure:
+{
+    "projectName": "Name of the Drink / Beverage",
+    "baselineName": "Name of the baseline control version",
+    "activeBatch": 1,
+    "defaultTweakCategory": "Technique",
+    "defaultTweakText": "Testing clarification or carbonation or temperature controls.",
+    "keywords": ["list", "of", "ingredients", "used"],
+    "lab": "drinks",
+    "ingredientSections": {
+        "cream": "Spirits & Liqueurs (or Base)",
+        "soak": "Sweeteners & Modifiers (or Acids)",
+        "assembly": "Dilution & Garnish (or Finish)"
+    },
+    "ingredients": {
+        "cream": [
+            { "name": "Ingredient Name", "baseWeight": 45, "unit": "g" }
+        ],
+        "soak": [
+            { "name": "Ingredient Name", "baseWeight": 20, "unit": "g" }
+        ],
+        "assembly": [
+            { "name": "Ingredient Name", "baseWeight": 30, "unit": "g" }
+        ]
+    },
+    "steps": [
+        {
+            "phase": "mise-en-place",
+            "label": "Preparation Step",
+            "tweakReminder": "",
+            "timer": 120,
+            "textVariants": {
+                "beginner": "Simple instruction for beginner.",
+                "professional": "Instruction for professional.",
+                "michelin": "Precise instruction for Michelin-level bartender."
+            }
+        }
+    ],
+    "comparison": {
+        "baseline": [
+            { "title": "Standard Baseline", "desc": "Standard control ingredients." }
+        ],
+        "test": [
+            { "title": "Pantry Batch", "desc": "Pantry adaptation.", "isTweak": true }
+        ]
+    }
+}
+Important rules for JSON:
+- Weights MUST be numbers, not strings.
+- Units should be 'g', 'ml', or 'drop' where possible.
+- The 'phase' in steps must be one of: 'mise-en-place', 'execution', 'assembly'.
+- Group ingredients logically into 'cream' (spirits, primary liquors, main brew bases), 'soak' (syrups, modifiers, sweeteners, acid adjusters), and 'assembly' (dilution water, ice, garnishes, custom oils, final toppings).
+- Ensure the "lab": "drinks" property is explicitly included!
+`;
+            userInstruction = `Please create a beverage or drink formulation using these ingredients: ${ingredients}`;
+        }
+
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Please create a recipe using these ingredients: ${ingredients}`,
+            contents: userInstruction,
             config: {
-                systemInstruction: SYSTEM_PROMPT,
+                systemInstruction: systemPrompt,
                 responseMimeType: "application/json"
             }
         });
 
         const recipeJsonStr = response.text();
         const recipeData = JSON.parse(recipeJsonStr);
+        
+        // Inject or enforce correct properties
+        recipeData.lab = type === 'drinks' ? 'drinks' : 'culinary';
+        if (!recipeData.ingredientSections) {
+            recipeData.ingredientSections = type === 'drinks' ? {
+                cream: "Spirits & Liqueurs",
+                soak: "Sweeteners & Modifiers",
+                assembly: "Dilution & Garnish"
+            } : {
+                cream: "Cream & Flour",
+                soak: "Soak & Liquids",
+                assembly: "Assembly & Dusting"
+            };
+        }
         
         res.json(recipeData);
 
