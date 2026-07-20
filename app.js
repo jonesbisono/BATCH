@@ -718,6 +718,10 @@ const PANTRY_DATABASE = {
 // 2. STATE MANAGER (Now tracking Skill Levels and Tools checklist)
 const State = {
     activeLab: "culinary", // culinary, drinks
+    notebooks: [
+        { id: "culinary", name: "CULINARY LAB", theme: "culinary" },
+        { id: "drinks", name: "DRINKS LAB", theme: "drinks" }
+    ],
     activeProjectId: "tiramisu",
     scaleMultiplier: 1.0,
     currentTweakCategory: "Ingredients",
@@ -900,15 +904,69 @@ const UI = {
     toolPhotoImage: document.getElementById("toolPhotoImage"),
     removeToolPhotoBtn: document.getElementById("removeToolPhotoBtn"),
     newToolName: document.getElementById("newToolName"),
-    newToolDesc: document.getElementById("newToolDesc")
+    newToolDesc: document.getElementById("newToolDesc"),
+    
+    // BATCH Dynamic Lab Switcher & Notebook Creator UI Elements
+    labSwitcher: document.getElementById("labSwitcher"),
+    addNewLabTabBtn: document.getElementById("addNewLabTabBtn"),
+    notebookCreatorModal: document.getElementById("notebookCreatorModal"),
+    closeNotebookCreatorBtn: document.getElementById("closeNotebookCreatorBtn"),
+    saveNewNotebookBtn: document.getElementById("saveNewNotebookBtn"),
+    newNotebookName: document.getElementById("newNotebookName"),
+    newNotebookTheme: document.getElementById("newNotebookTheme"),
+    
+    // BATCH Sync UI Elements
+    openSyncBtn: document.getElementById("openSyncBtn"),
+    syncModal: document.getElementById("syncModal"),
+    closeSyncBtn: document.getElementById("closeSyncBtn"),
+    closeSyncModalBtn: document.getElementById("closeSyncModalBtn"),
+    syncConnectionStatus: document.getElementById("syncConnectionStatus"),
+    syncLocalTime: document.getElementById("syncLocalTime"),
+    syncCloudTime: document.getElementById("syncCloudTime"),
+    syncStatusSummary: document.getElementById("syncStatusSummary"),
+    syncNowBtn: document.getElementById("syncNowBtn"),
+    forceUploadBtn: document.getElementById("forceUploadBtn"),
+    forceDownloadBtn: document.getElementById("forceDownloadBtn"),
+    
+    // AI Autofill Creator Form Elements
+    autofillAiBtn: document.getElementById("autofillAiBtn"),
+    autofillAiBtnText: document.getElementById("autofillAiBtnText"),
+    creatorSuggestedToolsContainer: document.getElementById("creatorSuggestedToolsContainer"),
+    creatorSuggestedToolsList: document.getElementById("creatorSuggestedToolsList")
 };
 
 // 4. CORE APP FUNCTIONS
 
+function updateLocalTimestamp() {
+    localStorage.setItem("BATCH_LAST_UPDATED", Date.now().toString());
+}
+
+function loadNotebooks() {
+    const raw = localStorage.getItem("BATCH_NOTEBOOKS_V1");
+    if (raw) {
+        try {
+            State.notebooks = JSON.parse(raw);
+        } catch(e) {
+            console.error("Failed loading notebooks from local storage", e);
+        }
+    }
+}
+
+function saveNotebooks() {
+    try {
+        localStorage.setItem("BATCH_NOTEBOOKS_V1", JSON.stringify(State.notebooks));
+        updateLocalTimestamp();
+    } catch(e) {
+        console.error("Failed saving notebooks to local storage", e);
+    }
+}
+
 // Initialize Application
-function init() {
+async function init() {
+    loadNotebooks();
     loadUnifiedDatabase();
     loadToolsInventory();
+    renderLabSwitcher();
     setupEventHandlers();
     
     // Show home screen
@@ -924,6 +982,13 @@ function init() {
     // Initialize Recipe Creator rows
     addIngredientInputRow("", "", "g");
     addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+    
+    // Automatically Sync with server on startup
+    try {
+        await performStartupSync();
+    } catch (e) {
+        console.warn("Startup sync check failed. Continuing in local-only cache mode.", e);
+    }
 }
 
 // Load Unified Database from localStorage
@@ -932,6 +997,10 @@ function loadUnifiedDatabase() {
         const saved = localStorage.getItem("BATCH_RECIPE_DATABASE_V2");
         if (saved) {
             const customDb = JSON.parse(saved);
+            // Clear current memory database and load from customDb
+            for (let key in RECIPE_DATABASE) {
+                delete RECIPE_DATABASE[key];
+            }
             for (let key in customDb) {
                 RECIPE_DATABASE[key] = customDb[key];
             }
@@ -939,12 +1008,12 @@ function loadUnifiedDatabase() {
     } catch(e) {
         console.error("Failed loading unified database", e);
     }
-    // Library will be rendered when home screen is shown
 }
 
 function saveUnifiedDatabase() {
     try {
         localStorage.setItem("BATCH_RECIPE_DATABASE_V2", JSON.stringify(RECIPE_DATABASE));
+        updateLocalTimestamp();
     } catch(e) {
         console.error("Local storage save failed:", e);
     }
@@ -1568,35 +1637,205 @@ function triggerWaveGesture() {
 }
 
 // 7. EVENT HANDLERS SETUP
+function selectLab(labId) {
+    State.activeLab = labId;
+    
+    // Find active notebook to apply theme
+    const notebook = State.notebooks.find(n => n.id === labId) || { theme: "culinary" };
+    
+    // Update active class on switcher tabs
+    document.querySelectorAll("#labSwitcher .lab-tab").forEach(tab => {
+        if (tab.getAttribute("data-lab") === labId) {
+            tab.classList.add("active");
+        } else {
+            tab.classList.remove("active");
+        }
+    });
+    
+    if (notebook.theme === "drinks") {
+        document.documentElement.classList.add("theme-drinks");
+    } else {
+        document.documentElement.classList.remove("theme-drinks");
+    }
+    
+    // Set headers text variant placeholders based on active theme
+    if (UI.creatorModalTitle) {
+        if (notebook.theme === "drinks") {
+            UI.creatorModalTitle.textContent = "Create Custom Drinks Formulation";
+            UI.creatorModalDesc.textContent = "Register a new master drinks project and configure its technical parameters.";
+        } else {
+            UI.creatorModalTitle.textContent = "Create Custom Culinary Formulation";
+            UI.creatorModalDesc.textContent = "Register a new master culinary project and configure its technical parameters.";
+        }
+    }
+    
+    // If workspace is active, go home
+    UI.mainWorkspace.style.display = "none";
+    if (UI.toolsScreen) UI.toolsScreen.style.display = "none";
+    UI.goHomeBtn.style.display = "none";
+    UI.homeScreen.style.display = "block";
+    
+    // Rerender home screen
+    renderRecipeLibrary(UI.recipeSearchInput.value);
+}
+
+function renderLabSwitcher() {
+    if (!UI.labSwitcher) return;
+    UI.labSwitcher.innerHTML = "";
+    State.notebooks.forEach(notebook => {
+        const btn = document.createElement("button");
+        btn.className = `lab-tab ${State.activeLab === notebook.id ? "active" : ""}`;
+        btn.textContent = notebook.name;
+        btn.setAttribute("data-lab", notebook.id);
+        btn.addEventListener("click", () => selectLab(notebook.id));
+        UI.labSwitcher.appendChild(btn);
+    });
+}
+
 function setupEventHandlers() {
     
-    // Lab Tab Switchers
-    const selectLab = (labId) => {
-        State.activeLab = labId;
-        
-        // Update active class on tabs
-        if (labId === "drinks") {
-            UI.drinksLabTab.classList.add("active");
-            UI.culinaryLabTab.classList.remove("active");
-            document.documentElement.classList.add("theme-drinks");
-        } else {
-            UI.culinaryLabTab.classList.add("active");
-            UI.drinksLabTab.classList.remove("active");
-            document.documentElement.classList.remove("theme-drinks");
-        }
-        
-        // If workspace is active, go home
-        UI.mainWorkspace.style.display = "none";
-        if (UI.toolsScreen) UI.toolsScreen.style.display = "none";
-        UI.goHomeBtn.style.display = "none";
-        UI.homeScreen.style.display = "block";
-        
-        // Rerender home screen
-        renderRecipeLibrary(UI.recipeSearchInput.value);
-    };
+    // Lab Tab Switchers (dynamic "+" click handler)
+    if (UI.addNewLabTabBtn) {
+        UI.addNewLabTabBtn.addEventListener("click", () => {
+            UI.newNotebookName.value = "";
+            UI.newNotebookTheme.value = "culinary";
+            UI.notebookCreatorModal.classList.add("active");
+        });
+    }
     
-    UI.culinaryLabTab.addEventListener("click", () => selectLab("culinary"));
-    UI.drinksLabTab.addEventListener("click", () => selectLab("drinks"));
+    if (UI.closeNotebookCreatorBtn) {
+        UI.closeNotebookCreatorBtn.addEventListener("click", () => {
+            UI.notebookCreatorModal.classList.remove("active");
+        });
+    }
+    
+    if (UI.saveNewNotebookBtn) {
+        UI.saveNewNotebookBtn.addEventListener("click", () => {
+            const name = UI.newNotebookName.value.trim();
+            const theme = UI.newNotebookTheme.value;
+            if (!name) {
+                alert("Please enter a notebook name.");
+                return;
+            }
+            const id = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            // Check for duplicate ID
+            if (State.notebooks.some(n => n.id === id)) {
+                alert("A notebook with this name already exists.");
+                return;
+            }
+            State.notebooks.push({ id, name: name.toUpperCase(), theme });
+            saveNotebooks();
+            renderLabSwitcher();
+            UI.notebookCreatorModal.classList.remove("active");
+            selectLab(id);
+            showToast(`Notebook "${name}" created!`);
+        });
+    }
+    
+    // Sync Button Click handlers
+    if (UI.openSyncBtn) {
+        UI.openSyncBtn.addEventListener("click", () => {
+            openSyncModal();
+        });
+    }
+    
+    if (UI.closeSyncBtn) {
+        UI.closeSyncBtn.addEventListener("click", () => {
+            UI.syncModal.classList.remove("active");
+        });
+    }
+    
+    if (UI.closeSyncModalBtn) {
+        UI.closeSyncModalBtn.addEventListener("click", () => {
+            UI.syncModal.classList.remove("active");
+        });
+    }
+    
+    if (UI.syncNowBtn) {
+        UI.syncNowBtn.addEventListener("click", async () => {
+            UI.syncNowBtn.disabled = true;
+            const originalText = UI.syncNowBtn.innerHTML;
+            UI.syncNowBtn.innerHTML = "Syncing...";
+            try {
+                await performManualSyncAutoDetect();
+            } finally {
+                UI.syncNowBtn.disabled = false;
+                UI.syncNowBtn.innerHTML = originalText;
+            }
+        });
+    }
+    
+    if (UI.forceUploadBtn) {
+        UI.forceUploadBtn.addEventListener("click", async () => {
+            if (confirm("Are you sure you want to force upload? This will overwrite all cloud data with your local database.")) {
+                UI.forceUploadBtn.disabled = true;
+                try {
+                    await uploadToCloud();
+                    await updateSyncModalDisplay();
+                    showToast("Force upload completed successfully.");
+                } catch(e) {
+                    alert("Force upload failed: " + e.message);
+                } finally {
+                    UI.forceUploadBtn.disabled = false;
+                }
+            }
+        });
+    }
+    
+    if (UI.forceDownloadBtn) {
+        UI.forceDownloadBtn.addEventListener("click", async () => {
+            if (confirm("Are you sure you want to force download? This will overwrite all your local data with the cloud files.")) {
+                UI.forceDownloadBtn.disabled = true;
+                try {
+                    await downloadFromCloud();
+                    await updateSyncModalDisplay();
+                    showToast("Force download completed successfully.");
+                } catch(e) {
+                    alert("Force download failed: " + e.message);
+                } finally {
+                    UI.forceDownloadBtn.disabled = false;
+                }
+            }
+        });
+    }
+    
+    // AI Autofill Button click handler
+    if (UI.autofillAiBtn) {
+        UI.autofillAiBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const name = UI.newRecipeName.value.trim();
+            if (!name) {
+                alert("Please enter a Master Project Name first.");
+                UI.newRecipeName.focus();
+                return;
+            }
+            
+            UI.autofillAiBtn.classList.add("loading");
+            UI.autofillAiBtnText.textContent = "Autofilling...";
+            
+            try {
+                const response = await fetch('/api/autofill-recipe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, lab: State.activeLab })
+                });
+                
+                if (!response.ok) {
+                    throw new Error("API request failed with status: " + response.status);
+                }
+                
+                const data = await response.json();
+                populateCreatorFormWithAI(data);
+                showToast("Form successfully populated by AI!");
+            } catch(err) {
+                console.error("AI Autofill failed:", err);
+                alert("AI Autofill failed. Make sure server is running and GEMINI_API_KEY is set in .env.");
+            } finally {
+                UI.autofillAiBtn.classList.remove("loading");
+                UI.autofillAiBtnText.textContent = "Autofill with AI";
+            }
+        });
+    }
 
     // Theme Toggle
     UI.themeToggle.addEventListener("click", () => {
@@ -1803,6 +2042,11 @@ function setupEventHandlers() {
         }
         
         // Refresh default rows so placeholders update correctly
+        if (UI.creatorSuggestedToolsContainer) {
+            UI.creatorSuggestedToolsContainer.style.display = "none";
+            UI.creatorSuggestedToolsList.innerHTML = "";
+            State.currentSuggestedTools = null;
+        }
         UI.ingredientInputRowsContainer.innerHTML = "";
         addIngredientInputRow("", "", State.activeLab === "drinks" ? "ml" : "g");
         
@@ -2152,6 +2396,7 @@ function saveCreatedRecipe(e) {
         ingredients: ingredients,
         steps: steps,
         lab: State.activeLab,
+        suggestedTools: State.currentSuggestedTools || null,
         ingredientSections: State.activeLab === "drinks" ? {
             cream: "Spirits & Liqueurs",
             soak: "Sweeteners & Modifiers",
@@ -2195,6 +2440,7 @@ function saveCreatedRecipe(e) {
     UI.newRecipeTweakText.value = "";
     UI.ingredientInputRowsContainer.innerHTML = "";
     UI.stepInputRowsContainer.innerHTML = "";
+    State.currentSuggestedTools = null;
     
     // Reinitialize creator default rows
     addIngredientInputRow("", "", "g");
@@ -2505,6 +2751,12 @@ async function fetchSuggestedTools(recipe) {
     UI.toolAdaptationPrompt.style.display = "none";
     
     let tools = [];
+    if (recipe.suggestedTools && recipe.suggestedTools.length > 0) {
+        tools = recipe.suggestedTools;
+        renderDynamicTools(tools);
+        return;
+    }
+    
     try {
         const response = await fetch('/api/suggest-tools', {
             method: 'POST',
@@ -2696,6 +2948,7 @@ function loadToolsInventory() {
 
 function saveToolsInventory() {
     localStorage.setItem("BATCH_TOOLS_INVENTORY_V1", JSON.stringify(State.toolsInventory));
+    updateLocalTimestamp();
 }
 
 function renderToolsGrid() {
@@ -2739,6 +2992,284 @@ function renderToolsGrid() {
         
         UI.toolsGrid.appendChild(card);
     });
+}
+
+// =========================================================================
+// CLOUD PERSISTENCE SYNC ENGINE & AI AUTOFILL METHODS (NEW FUNCTIONALITY)
+// =========================================================================
+
+function showToast(message) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.cssText = `
+        background: rgba(15, 23, 42, 0.95);
+        color: #fff;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.1);
+        margin-top: 8px;
+        pointer-events: auto;
+        animation: toastSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    `;
+    toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" style="margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg> ${message}`;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'toastFadeOut 0.3s ease forwards';
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+        });
+    }, 3000);
+}
+
+async function performStartupSync() {
+    try {
+        const response = await fetch('/api/sync');
+        if (!response.ok) throw new Error("Sync status request failed.");
+        const cloudData = await response.json();
+        
+        const localLastUpdated = parseInt(localStorage.getItem("BATCH_LAST_UPDATED")) || 0;
+        const cloudLastUpdated = parseInt(cloudData.lastUpdated) || 0;
+        
+        console.log(`Sync status: Local updated = ${localLastUpdated}, Cloud updated = ${cloudLastUpdated}`);
+        
+        if (localLastUpdated === 0 && cloudLastUpdated === 0) {
+            // First run, nothing to sync, push defaults to server
+            await uploadToCloud();
+        } else if (localLastUpdated > cloudLastUpdated) {
+            // Local is newer, upload local changes to cloud
+            console.log("Local changes are newer. Uploading to server.");
+            await uploadToCloud();
+            showToast("Local database synced to cloud.");
+        } else if (cloudLastUpdated > localLastUpdated) {
+            // Cloud is newer, download cloud changes to local
+            console.log("Server changes are newer. Downloading to client.");
+            await downloadFromCloudData(cloudData);
+            showToast("Downloaded latest database from cloud.");
+        } else {
+            console.log("Local and server states are in sync.");
+        }
+    } catch (e) {
+        console.warn("Startup synchronization check failed:", e);
+    }
+}
+
+async function performManualSyncAutoDetect() {
+    try {
+        const response = await fetch('/api/sync');
+        if (!response.ok) throw new Error("Could not check sync status");
+        const cloudData = await response.json();
+        
+        const localTime = parseInt(localStorage.getItem("BATCH_LAST_UPDATED")) || 0;
+        const cloudTime = parseInt(cloudData.lastUpdated) || 0;
+        
+        if (localTime > cloudTime) {
+            await uploadToCloud();
+            showToast("Local changes uploaded to cloud.");
+        } else if (cloudTime > localTime) {
+            await downloadFromCloudData(cloudData);
+            showToast("Latest changes downloaded from cloud.");
+        } else {
+            showToast("Everything is already up to date.");
+        }
+        await updateSyncModalDisplay();
+    } catch (e) {
+        console.error(e);
+        alert("Sync failed: " + e.message);
+    }
+}
+
+async function uploadToCloud() {
+    const localLastUpdated = parseInt(localStorage.getItem("BATCH_LAST_UPDATED")) || Date.now();
+    
+    const payload = {
+        recipes: RECIPE_DATABASE,
+        tools: State.toolsInventory,
+        notebooks: State.notebooks,
+        lastUpdated: localLastUpdated
+    };
+    
+    const response = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+        throw new Error("Cloud upload request failed.");
+    }
+    
+    const resData = await response.json();
+    if (resData.lastUpdated) {
+        localStorage.setItem("BATCH_LAST_UPDATED", resData.lastUpdated.toString());
+    }
+}
+
+async function downloadFromCloud() {
+    const response = await fetch('/api/sync');
+    if (!response.ok) throw new Error("Cloud download request failed.");
+    const cloudData = await response.json();
+    await downloadFromCloudData(cloudData);
+}
+
+async function downloadFromCloudData(cloudData) {
+    if (!cloudData) return;
+    
+    // Save to local storage
+    if (cloudData.recipes) {
+        localStorage.setItem("BATCH_RECIPE_DATABASE_V2", JSON.stringify(cloudData.recipes));
+        // Clear memory database and reload
+        for (let key in RECIPE_DATABASE) {
+            delete RECIPE_DATABASE[key];
+        }
+        for (let key in cloudData.recipes) {
+            RECIPE_DATABASE[key] = cloudData.recipes[key];
+        }
+    }
+    
+    if (cloudData.tools) {
+        localStorage.setItem("BATCH_TOOLS_INVENTORY_V1", JSON.stringify(cloudData.tools));
+        State.toolsInventory = cloudData.tools;
+    }
+    
+    if (cloudData.notebooks) {
+        localStorage.setItem("BATCH_NOTEBOOKS_V1", JSON.stringify(cloudData.notebooks));
+        State.notebooks = cloudData.notebooks;
+    }
+    
+    if (cloudData.lastUpdated) {
+        localStorage.setItem("BATCH_LAST_UPDATED", cloudData.lastUpdated.toString());
+    }
+    
+    // Refresh UI
+    renderLabSwitcher();
+    if (!State.notebooks.some(n => n.id === State.activeLab)) {
+        State.activeLab = State.notebooks[0] ? State.notebooks[0].id : "culinary";
+    }
+    selectLab(State.activeLab);
+    renderToolsGrid();
+}
+
+function openSyncModal() {
+    if (!UI.syncModal) return;
+    UI.syncModal.classList.add("active");
+    updateSyncModalDisplay();
+}
+
+async function updateSyncModalDisplay() {
+    if (!UI.syncModal) return;
+    
+    const localTime = parseInt(localStorage.getItem("BATCH_LAST_UPDATED")) || 0;
+    UI.syncLocalTime.textContent = localTime === 0 ? "Never" : new Date(localTime).toLocaleString();
+    UI.syncCloudTime.textContent = "Checking...";
+    UI.syncConnectionStatus.textContent = "Checking...";
+    UI.syncConnectionStatus.className = "badge-status";
+    UI.syncStatusSummary.textContent = "Checking...";
+    
+    try {
+        const response = await fetch('/api/sync');
+        if (!response.ok) throw new Error("Sync status query failed.");
+        const cloudData = await response.json();
+        
+        const cloudTime = parseInt(cloudData.lastUpdated) || 0;
+        UI.syncCloudTime.textContent = cloudTime === 0 ? "Never" : new Date(cloudTime).toLocaleString();
+        
+        UI.syncConnectionStatus.textContent = "Connected";
+        UI.syncConnectionStatus.className = "badge-status online";
+        
+        if (localTime === 0 && cloudTime === 0) {
+            UI.syncStatusSummary.textContent = "No data synchronized";
+            UI.syncStatusSummary.style.color = "var(--tweak-color)";
+        } else if (Math.abs(localTime - cloudTime) < 2000) {
+            UI.syncStatusSummary.textContent = "Up to date";
+            UI.syncStatusSummary.style.color = "var(--rent-badge)";
+        } else if (localTime > cloudTime) {
+            UI.syncStatusSummary.textContent = "Local changes pending upload";
+            UI.syncStatusSummary.style.color = "var(--brand-accent)";
+        } else {
+            UI.syncStatusSummary.textContent = "Cloud updates pending download";
+            UI.syncStatusSummary.style.color = "var(--tweak-color)";
+        }
+    } catch(err) {
+        UI.syncConnectionStatus.textContent = "Offline";
+        UI.syncConnectionStatus.className = "badge-status offline";
+        UI.syncCloudTime.textContent = "Unavailable";
+        UI.syncStatusSummary.textContent = "Unable to reach server";
+        UI.syncStatusSummary.style.color = "var(--tweak-color)";
+    }
+}
+
+function populateCreatorFormWithAI(data) {
+    if (!data) return;
+    
+    if (UI.newRecipeBaseline) UI.newRecipeBaseline.value = data.baselineName || "Baseline Control v1.0";
+    if (UI.newRecipeTweakCat) UI.newRecipeTweakCat.value = data.defaultTweakCategory || "Ingredients";
+    if (UI.newRecipeTweakText) UI.newRecipeTweakText.value = data.defaultTweakText || "";
+    
+    UI.ingredientInputRowsContainer.innerHTML = "";
+    const sections = ["cream", "soak", "assembly"];
+    sections.forEach(section => {
+        if (data.ingredients && data.ingredients[section]) {
+            data.ingredients[section].forEach(ing => {
+                addIngredientInputRow(ing.name, ing.baseWeight, ing.unit, section);
+            });
+        }
+    });
+    if (UI.ingredientInputRowsContainer.children.length === 0) {
+        addIngredientInputRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+    }
+    
+    UI.stepInputRowsContainer.innerHTML = "";
+    if (data.steps && data.steps.length > 0) {
+        data.steps.forEach(step => {
+            const beg = step.textVariants ? (step.textVariants.beginner || "") : "";
+            const pro = step.textVariants ? (step.textVariants.professional || "") : "";
+            const mich = step.textVariants ? (step.textVariants.michelin || "") : "";
+            addStepInputRow(
+                step.label || "", 
+                step.phase || "mise-en-place", 
+                step.tweakReminder || "", 
+                beg, 
+                pro, 
+                mich, 
+                step.timer || 0
+            );
+        });
+    } else {
+        addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+    }
+    
+    if (UI.creatorSuggestedToolsContainer && UI.creatorSuggestedToolsList) {
+        UI.creatorSuggestedToolsList.innerHTML = "";
+        if (data.suggestedTools && data.suggestedTools.length > 0) {
+            State.currentSuggestedTools = data.suggestedTools;
+            data.suggestedTools.forEach(toolName => {
+                const badge = document.createElement("span");
+                badge.className = "creator-tool-badge";
+                badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg> ${toolName}`;
+                UI.creatorSuggestedToolsList.appendChild(badge);
+            });
+            UI.creatorSuggestedToolsContainer.style.display = "block";
+        } else {
+            State.currentSuggestedTools = null;
+            UI.creatorSuggestedToolsContainer.style.display = "none";
+        }
+    }
 }
 
 // Initialize on page load

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "culinary",
+    "name": "CULINARY LAB",
+    "theme": "culinary"
+  },
+  {
+    "id": "drinks",
+    "name": "DRINKS LAB",
+    "theme": "drinks"
+  },
+  {
+    "id": "baking_lab",
+    "name": "BAKING LAB",
+    "theme": "culinary"
+  }
+]

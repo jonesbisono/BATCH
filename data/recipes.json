@@ -1,0 +1,975 @@
+{
+  "tiramisu": {
+    "projectName": "The Ultimate From-Scratch Tiramisu",
+    "baselineName": "Baseline Control Recipe v1.0",
+    "activeBatch": 5,
+    "defaultTweakCategory": "Ingredients",
+    "defaultTweakText": "Swapping standard ladyfingers for homemade almond flour Savoiardi.",
+    "lab": "culinary",
+    "ingredientSections": {
+      "cream": "Zabaglione & Cream",
+      "soak": "Ladyfinger Soak",
+      "assembly": "Assembly & Dusting"
+    },
+    "ingredients": {
+      "cream": [
+        {
+          "name": "Egg Yolks",
+          "baseWeight": 120,
+          "unit": "g"
+        },
+        {
+          "name": "Sugar (Granulated)",
+          "baseWeight": 100,
+          "unit": "g"
+        },
+        {
+          "name": "Mascarpone Cheese",
+          "baseWeight": 500,
+          "unit": "g"
+        },
+        {
+          "name": "Heavy Whipping Cream",
+          "baseWeight": 240,
+          "unit": "g"
+        }
+      ],
+      "soak": [
+        {
+          "name": "Espresso (Strong Brew)",
+          "baseWeight": 300,
+          "unit": "g"
+        },
+        {
+          "name": "Ladyfinger Biscuits",
+          "baseWeight": 200,
+          "unit": "g",
+          "tweakHighlighted": true,
+          "baselineText": "Store-bought Savoiardi biscuits",
+          "testText": "Homemade almond flour Savoiardi biscuits (&Delta; Tweak)"
+        },
+        {
+          "name": "Marsala Wine (Optional)",
+          "baseWeight": 45,
+          "unit": "g"
+        }
+      ],
+      "assembly": [
+        {
+          "name": "Cocoa Powder (Unsweetened)",
+          "baseWeight": 15,
+          "unit": "g"
+        },
+        {
+          "name": "Dark Chocolate Shavings",
+          "baseWeight": 25,
+          "unit": "g"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "phase": "mise-en-place",
+        "label": "Prepare Ingredients",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Measure out all ingredients precisely using a digital kitchen scale. Place egg yolks in a medium mixing bowl to warm up to room temperature. Scoop the mascarpone cheese into a separate bowl and press it slightly with a spatula to soften it.",
+          "professional": "Prep and weigh all ingredients. Temper yolks at room temperature; temper mascarpone to 18°C.",
+          "michelin": "Mise en place yolks (120g) at precisely 20°C. Vac-seal softened mascarpone (500g) in a chamber sealer to de-aerate and soften cream structure uniformly."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Whip Zabaglione",
+        "tweakReminder": "",
+        "timer": 300,
+        "textVariants": {
+          "beginner": "Fill a small pot with 1 inch of water and bring to a simmer. Set your glass bowl with egg yolks and sugar on top (making sure the bottom of the bowl does not touch the water). Whisk constantly by hand for 6 minutes until the mixture turns pale yellow and thickens.",
+          "professional": "Whisk yolks and sugar over a double boiler (bain-marie) to ribbon stage.",
+          "michelin": "Combine yolks and sugar. Mount over a water bath. Temper precisely to 82°C (180°F) using an instant-read probe thermometer. Whisk vigorously to a stable emulsified sabayon stage."
+        },
+        "toolVariants": {
+          "tool-doubleboiler": {
+            "beginner": "Place egg yolks and sugar in the top pan of your double boiler over simmering water. Whisk continuously by hand for 5 minutes until pale and ribbon-like.",
+            "professional": "Whisk yolks/sugar in double boiler to ribbon stage (approx 5 min).",
+            "michelin": "Whip yolks/sugar in double boiler. Monitor temperature to stabilize emulsion at exactly 82°C."
+          }
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Prepare Whipped Cream",
+        "tweakReminder": "Technique Focus: Whisk whipped cream to soft peaks to balance the rich zabaglione structure.",
+        "timer": 240,
+        "textVariants": {
+          "beginner": "Pour cold heavy cream into a cold bowl. Whip the cream. Fold the mascarpone cheese into your cooled yolk mixture, then fold in the whipped cream in three parts.",
+          "professional": "Whip heavy cream to soft-medium peaks. Fold mascarpone into cooled zabaglione, then fold in whipped cream.",
+          "michelin": "Blend heavy cream and mascarpone base. Fold into sabayon base under gentle folding actions to retain structural density."
+        },
+        "toolVariants": {
+          "tool-whisk": {
+            "beginner": "Pour cold heavy cream into a chilled bowl. Grab your hand balloon whisk and whip vigorously by hand for 6-8 minutes until soft peaks form.",
+            "timer": 420
+          },
+          "tool-mixer": {
+            "beginner": "Pour cold heavy cream into the stand mixer bowl. Using the whisk attachment, run on medium speed for 3 minutes until soft peaks form. Do not overwhip.",
+            "professional": "Whip heavy cream in stand mixer to soft peaks on speed 6 (approx 2 minutes).",
+            "michelin": "Whip heavy cream to soft peaks in stand mixer. Fold into sabayon base immediately.",
+            "timer": 120
+          },
+          "tool-siphon": {
+            "beginner": "Mix heavy cream and softened mascarpone until smooth. Pour into whipping siphon, charge with 1 N2O charger, shake well, and express into the yolk mixture.",
+            "professional": "Whip mascarpone and cream base in an iSi siphon charged with 2 N2O canisters. Fold into zabaglione.",
+            "michelin": "Incorporate cream and mascarpone. Pass through a fine chinois, charge in an iSi whipping siphon with 2 N2O cartridges. Discharging into the sabayon base to create a highly stable, micro-aerated foam.",
+            "timer": 0
+          }
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Biscuits Soak & Layering",
+        "tweakReminder": "Active Delta Tweak: Using homemade almond flour Savoiardi. Reduce soak immersion time slightly to prevent collapsing.",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Pour espresso into a shallow bowl. One by one, dip the ladyfinger cookies in the coffee for just 1 second per side (do not let them get soggy). Line the bottom of your rectangular baking dish with the dipped cookies.",
+          "professional": "Drag ladyfingers through espresso soak for 0.5 seconds. Layer bottom of pan immediately.",
+          "michelin": "Cryo-infuse ladyfingers with espresso. Layer in pan with absolute alignment."
+        },
+        "toolVariants": {
+          "tool-chambervac": {
+            "beginner": "Place ladyfingers in a bowl. Pour espresso over them. Use your vacuum sealer chamber if available to quickly compress the cookies with espresso in 5 seconds.",
+            "professional": "Vacuum compress ladyfingers with espresso soak at 0.8 bar to inject coffee without destroying crumb structure.",
+            "michelin": "Chamber vacuum pack the homemade almond flour ladyfingers with single-origin espresso at exactly 95% vacuum. Achieves complete, instant, clean absorption with zero structure bleeding.",
+            "timer": 5
+          }
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Final Assemble & Chill",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Spread half of your cream mixture over the cookies. Put another layer of dipped cookies on top, then cover with the rest of the cream. Dust the top with cocoa powder using a small sifter. Put it in the fridge for at least 6 hours.",
+          "professional": "Layer cream, biscuit soak, and remaining cream. Dust with Valrhona cocoa powder. Chill for 6 hours.",
+          "michelin": "Pipe cream base using a round tip bag. Dust with tempered cocoa powder and chocolate curls. Chill at 4°C for 6 hours."
+        }
+      }
+    ],
+    "comparison": {
+      "baseline": [
+        {
+          "title": "Ladyfingers Formulation",
+          "desc": "100% standard wheat flour ladyfinger cookies (high gluten absorption rate)."
+        },
+        {
+          "title": "Liquid Immersion Rate",
+          "desc": "2-second deep submersion in hot espresso; holds liquid without immediate leaking."
+        },
+        {
+          "title": "Zabaglione Whisking",
+          "desc": "Whisked manually for 6 minutes until ribbon stage is achieved."
+        }
+      ],
+      "test": [
+        {
+          "title": "Ladyfingers Formulation",
+          "desc": "Homemade gluten-free almond flour Savoiardi (&Delta; Tweak). Higher oil, lower starch.",
+          "isTweak": true
+        },
+        {
+          "title": "Liquid Immersion Rate",
+          "desc": "0.5-second shallow drag in cooled espresso to prevent collapse of crumb structure.",
+          "isTweak": true
+        },
+        {
+          "title": "Zabaglione Whisking",
+          "desc": "Whisked for 5 minutes. Folded with soft-peak cream to accommodate heavier almond biscuits."
+        }
+      ]
+    }
+  },
+  "pizza": {
+    "projectName": "Perfect Neapolitan Pizza Dough",
+    "baselineName": "Baseline Control Recipe v2.1",
+    "activeBatch": 8,
+    "defaultTweakCategory": "Time-Temp",
+    "defaultTweakText": "Extending cold fermentation to 72 hours (vs. 24 hours baseline) for superior lactic acid flavour development.",
+    "lab": "culinary",
+    "ingredientSections": {
+      "cream": "Dough Autolyse Base",
+      "soak": "Yeast & Salt Activation",
+      "assembly": "Plating & Dusting"
+    },
+    "ingredients": {
+      "cream": [
+        {
+          "name": "Tipo 00 Flour",
+          "baseWeight": 500,
+          "unit": "g",
+          "tweakHighlighted": true,
+          "baselineText": "100% Tipo 00 Flour",
+          "testText": "90% Tipo 00 + 10% Whole Wheat Flour (&Delta; Tweak)"
+        },
+        {
+          "name": "Water (Room Temp)",
+          "baseWeight": 325,
+          "unit": "g"
+        }
+      ],
+      "soak": [
+        {
+          "name": "Fine Sea Salt",
+          "baseWeight": 15,
+          "unit": "g"
+        },
+        {
+          "name": "Active Dry Yeast",
+          "baseWeight": 1.5,
+          "unit": "g"
+        }
+      ],
+      "assembly": [
+        {
+          "name": "Semolina (for dusting)",
+          "baseWeight": 50,
+          "unit": "g"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "phase": "mise-en-place",
+        "label": "Autolyse Phase",
+        "tweakReminder": "Flour Tweak: The 10% whole wheat content increases absorption; dough may feel slightly stickier.",
+        "timer": 1800,
+        "textVariants": {
+          "beginner": "Weigh your flour and room-temperature water. Mix them together in a large bowl with a spoon until no dry flour is visible. Cover the bowl with a damp towel and let it sit on the counter for 30 minutes. This lets the flour absorb water naturally.",
+          "professional": "Combine flour and water (65% hydration). Autolyse for 30 minutes.",
+          "michelin": "Combine 90% Tipo 00, 10% Whole Wheat flour, and water at 16°C. Vacuum seal the autolyse mass at 90% vacuum to accelerate hydration at a cellular level. Rest 30 minutes."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Knead Dough",
+        "tweakReminder": "",
+        "timer": 600,
+        "textVariants": {
+          "beginner": "Dissolve yeast in a tiny splash of water and add it to the autolysed dough. Add the salt. Knead by hand on a clean table for 10 minutes until the dough becomes smooth, soft, and no longer sticks to your hands.",
+          "professional": "Add yeast slurry and salt. Knead by hand for 10 minutes until smooth and gluten window is achieved.",
+          "michelin": "Incorporate yeast culture and salt. Knead using Rubaud method to oxygenate dough structure. Check temperature; maintain dough core at 23°C."
+        },
+        "toolVariants": {
+          "tool-mixer": {
+            "beginner": "Add yeast and salt. Mix in stand mixer with dough hook on low speed for 6 minutes until dough gathers around hook and looks smooth.",
+            "professional": "Mix in stand mixer with dough hook on speed 2 for 6 minutes to achieve high gluten development.",
+            "michelin": "Mix in stand mixer with spiral hook at 100 RPM for 5 minutes, checking dough temperature to ensure it does not exceed 24°C.",
+            "timer": 360
+          }
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Extended Cold Fermentation",
+        "tweakReminder": "Active Delta Tweak: Retard dough for a full 72 hours. Check dough daily for gas buildup and fermentation speed.",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Place your kneaded dough ball into a bowl lightly coated with olive oil. Cover tightly with plastic wrap and put it in the back of the refrigerator (4°C) for 72 hours. Cold temperatures slow down the yeast and build deep sourdough-like flavors.",
+          "professional": "Place in airtight container. Cold ferment at 4°C for 72 hours for deep flavor accumulation.",
+          "michelin": "Store dough in temperature-controlled proofing cabinet at exactly 3.5°C for 72 hours. Check pH levels (target 5.2)."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Dividing & Balling",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Take the dough out. Cut it into 3 equal pieces. Roll each piece into a tight, smooth ball. Place them on a baking sheet, cover with plastic, and let them sit at room temperature for 4 hours to warm up and double in size.",
+          "professional": "Portion into 270g balls. Ball tightly and proof in boxes at 20°C for 4 hours.",
+          "michelin": "Scale dough balls to exactly 265g. Shape into tight rounds. Proof at 18°C, 75% relative humidity for 4 hours."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Stretch, Top & Bake",
+        "tweakReminder": "",
+        "timer": 90,
+        "textVariants": {
+          "beginner": "Preheat your oven as hot as it goes (with a pizza stone inside). Take a dough ball, dust with flour, and press down from the center outwards with your fingers to stretch it into a circle. Add tomato sauce, mozzarella cheese, and bake for 5-8 minutes.",
+          "professional": "Stretch dough by hand leaving a 1-inch rim (cornicione). Top with San Marzano tomatoes, fresh fior di latte, and bake at 900°F (482°C) for 90 seconds.",
+          "michelin": "Hand-stretch dough ball preserving the micro-gas pockets in the rim. Apply vacuum-concentrated San Marzano gel, buffalo mozzarella, and cook at 485°C in a woodfired oven for exactly 85 seconds."
+        }
+      }
+    ],
+    "comparison": {
+      "baseline": [
+        {
+          "title": "Flour Composition",
+          "desc": "100% Caputo Tipo 00 flour."
+        },
+        {
+          "title": "Fermentation Time",
+          "desc": "24-hour cold ferment followed by 4 hours room temperature proofing."
+        },
+        {
+          "title": "Hydration Percentage",
+          "desc": "65% hydration (325g water to 500g flour)."
+        }
+      ],
+      "test": [
+        {
+          "title": "Flour Composition",
+          "desc": "90% Caputo Tipo 00 + 10% organic stone-ground whole wheat.",
+          "isTweak": true
+        },
+        {
+          "title": "Fermentation Time",
+          "desc": "72-hour cold ferment for deep lactic acid fermentation & complex sugar breakdown.",
+          "isTweak": true
+        },
+        {
+          "title": "Hydration Percentage",
+          "desc": "68% hydration (340g water to 500g flour) to offset the thirstier whole wheat bran.",
+          "isTweak": true
+        }
+      ]
+    }
+  },
+  "croissant": {
+    "projectName": "Ultimate 27-Layer Croissants",
+    "baselineName": "Baseline Laminations v3.0",
+    "activeBatch": 3,
+    "defaultTweakCategory": "Technique",
+    "defaultTweakText": "Performing a single fold followed by a double fold (24 layers) instead of three single folds (27 layers) to compare puff height.",
+    "lab": "culinary",
+    "ingredientSections": {
+      "cream": "Dough Base (Détrempe)",
+      "soak": "Butter Block (Beurrage)",
+      "assembly": "Proofing & Baking"
+    },
+    "ingredients": {
+      "cream": [
+        {
+          "name": "Bread Flour",
+          "baseWeight": 500,
+          "unit": "g"
+        },
+        {
+          "name": "Unsalted Butter (Détrempe)",
+          "baseWeight": 50,
+          "unit": "g"
+        },
+        {
+          "name": "Water (Cold)",
+          "baseWeight": 140,
+          "unit": "g"
+        },
+        {
+          "name": "Whole Milk (Cold)",
+          "baseWeight": 140,
+          "unit": "g"
+        }
+      ],
+      "soak": [
+        {
+          "name": "Butter Block (Beurrage)",
+          "baseWeight": 250,
+          "unit": "g",
+          "tweakHighlighted": true,
+          "baselineText": "Standard European butter (82% fat)",
+          "testText": "Normandy Cultured Butter (84% fat) (&Delta; Tweak)"
+        },
+        {
+          "name": "Fine Sugar",
+          "baseWeight": 55,
+          "unit": "g"
+        },
+        {
+          "name": "Instant Yeast",
+          "baseWeight": 10,
+          "unit": "g"
+        }
+      ],
+      "assembly": [
+        {
+          "name": "Egg (for egg wash)",
+          "baseWeight": 50,
+          "unit": "g"
+        },
+        {
+          "name": "Pinch of Salt",
+          "baseWeight": 1,
+          "unit": "g"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "phase": "mise-en-place",
+        "label": "Butter Roll-Out",
+        "tweakReminder": "Active Delta Tweak: French butter block (84% fat) has a higher plasticity. Ensure it remains exactly at 14°C / 57°F.",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Cut cold Normandy butter into blocks. Place between two sheets of baking parchment. Pound it with a rolling pin until it softens slightly, then roll it out into a flat, neat 19cm square. Place in the fridge to cool down.",
+          "professional": "Pound cold butter block to soften; roll into a precise 19x19cm block. Rest at 14°C.",
+          "michelin": "Vacuum sheet the 84% Normandy butter block between custom acetate templates to exactly 4mm uniform thickness. Rest at 13.5°C."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Butter Enclosure",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Roll your cold dough sheet into a 26cm square. Place the butter block diagonally in the center. Fold the corners of the dough over the butter block so they meet in the middle, like wrapping an envelope. Pinch all the seams tightly to seal the butter inside.",
+          "professional": "Roll détrempe to 26x26cm. Position butter block diagonally, envelope-fold, and seal seams firmly.",
+          "michelin": "Laminate the butter block (beurrage) diagonally in the détrempe. Seal edges precisely with zero overlaps to ensure perfectly balanced laminations."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Experimental Laminations",
+        "tweakReminder": "Technique Tweak: Perform 1 single fold and 1 double fold. Keep rolling motions fluid to prevent tearing of thin butter layers.",
+        "timer": 1800,
+        "textVariants": {
+          "beginner": "Roll the dough out into a long rectangle (60cm long). Fold the top third down, and the bottom third up (like a letter). Wrap in plastic and chill for 30 minutes. Repeat this roll-out and folding process one more time.",
+          "professional": "Roll band to 60cm. Execute 1 single fold and 1 double book fold. Chill for 30 minutes between rolling steps.",
+          "michelin": "Roll sheet to exactly 5.5mm. Execute 1 single fold and 1 double fold. Check layers under magnification; check that ambient temperature is exactly 16°C."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Cutting and Shaping",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Roll the dough out into a large sheet 4mm thick. Cut out triangles that are 9cm wide at the bottom and 28cm long. Cut a tiny slit in the middle of the base, and roll the triangle up starting from the wide base up to the point.",
+          "professional": "Roll sheet to 4mm. Cut triangles 9x28cm. Roll tightly from the base.",
+          "michelin": "Roll lamination sheet to 3.8mm. Trim edges using a straight ruler and rotary blade. Cut triangles to 9.2x28.5cm. Roll under constant tension to secure layers."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Proofing & Baking",
+        "tweakReminder": "",
+        "timer": 1140,
+        "textVariants": {
+          "beginner": "Place shaped croissants on a baking sheet. Let them rise at room temperature (about 25°C) for 2.5 hours until they are puffy and wobbly. Whisk egg and salt, brush over the top, and bake in oven at 375°F (190°C) for 18-20 minutes.",
+          "professional": "Proof at 25°C for 2.5 hours. Brush with egg wash. Bake at 375°F (190°C) for 18-20 minutes.",
+          "michelin": "Proof at exactly 24.5°C and 78% humidity for 150 minutes. Airbrush with yolk-cream emulsion wash. Bake in convection oven on low fan at 185°C for 18 minutes."
+        }
+      }
+    ],
+    "comparison": {
+      "baseline": [
+        {
+          "title": "Lamination Strategy",
+          "desc": "Three single letter folds (3 x 3 x 3 = 27 theoretical layers of butter)."
+        },
+        {
+          "title": "Butter Selection",
+          "desc": "82% fat standard European butter block."
+        },
+        {
+          "title": "Proofing Temperature",
+          "desc": "Proofed at 26°C (79°F) for 2 hours."
+        }
+      ],
+      "test": [
+        {
+          "title": "Lamination Strategy",
+          "desc": "One single fold and one book fold (3 x 4 = 12 butter layers / 24 dough layers).",
+          "isTweak": true
+        },
+        {
+          "title": "Butter Selection",
+          "desc": "84% fat Normandy cultured butter block (higher plastic range).",
+          "isTweak": true
+        },
+        {
+          "title": "Proofing Temperature",
+          "desc": "Proofed at 24°C (75°F) for 2.5 hours to accommodate Normandy butter.",
+          "isTweak": true
+        }
+      ]
+    }
+  },
+  "carbonated_negroni": {
+    "projectName": "Clarified & Carbonated Negroni",
+    "baselineName": "Standard Negroni Control v1.0",
+    "activeBatch": 3,
+    "defaultTweakCategory": "Technique",
+    "defaultTweakText": "Clarifying vermouth and campari via milk-washing to achieve high carbonation stability.",
+    "lab": "drinks",
+    "ingredientSections": {
+      "cream": "Spirits & Liqueurs",
+      "soak": "Clarification Agent",
+      "assembly": "Dilution & Finish"
+    },
+    "ingredients": {
+      "cream": [
+        {
+          "name": "London Dry Gin",
+          "baseWeight": 90,
+          "unit": "g"
+        },
+        {
+          "name": "Campari Bitter",
+          "baseWeight": 90,
+          "unit": "g"
+        },
+        {
+          "name": "Sweet Vermouth",
+          "baseWeight": 90,
+          "unit": "g"
+        }
+      ],
+      "soak": [
+        {
+          "name": "Whole Milk (Cold)",
+          "baseWeight": 30,
+          "unit": "g",
+          "tweakHighlighted": true,
+          "baselineText": "No milk washing (cloudy control)",
+          "testText": "Whole milk washing (&Delta; Tweak)"
+        },
+        {
+          "name": "Citric Acid Solution (10%)",
+          "baseWeight": 5,
+          "unit": "g"
+        }
+      ],
+      "assembly": [
+        {
+          "name": "Purified Water (for dilution)",
+          "baseWeight": 45,
+          "unit": "g"
+        },
+        {
+          "name": "Orange Peel Twist",
+          "baseWeight": 5,
+          "unit": "g"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "phase": "mise-en-place",
+        "label": "Prepare Ingredients",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Measure all spirits and prepare the whole milk in a glass vessel.",
+          "professional": "Combine Campari and Sweet Vermouth. Cool milk to 4°C.",
+          "michelin": "Weigh out spirits on a 0.01g scale. Combine vermouth and Campari. Chill whole milk to exactly 4°C."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Milk Clarification",
+        "tweakReminder": "Technique Focus: Milk clarify the red bitter base to strip proteins, yielding a transparent ruby hue.",
+        "timer": 600,
+        "textVariants": {
+          "beginner": "Pour the combined spirits slowly into the cold milk. Add citric acid. The milk will curdle. Let it sit for 10 minutes, then filter it through a coffee filter until perfectly crystal clear.",
+          "professional": "Slowly pour spirits into milk (never milk into spirits) to curdle. Let rest 10 min. Pass through double coffee filter.",
+          "michelin": "Drop spirits into milk at 4°C. Let curdle for exactly 600s. Pass through a chilled Buchner funnel under vacuum filtration to achieve 100% clarity."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Dilution and Chilling",
+        "tweakReminder": "",
+        "timer": 300,
+        "textVariants": {
+          "beginner": "Add the gin and water to the clarified mixture. Stir well and place in the freezer until it is very cold (around 28°F / -2°C).",
+          "professional": "Incorporate gin and dilution water. Chill to -3°C.",
+          "michelin": "Blend in London Dry Gin and dilution water. Target a final sugar density of 12 Brix. Supercool the batch to -4°C in a brine bath."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Carbonation & Bottling",
+        "tweakReminder": "Active Delta Tweak: Clarifying vermouth and campari via milk-washing to achieve high carbonation stability.",
+        "timer": 120,
+        "textVariants": {
+          "beginner": "Pour the cold cocktail into a carbonator bottle. Charge with CO2, shake, and let it sit for a minute before opening.",
+          "professional": "Carbonate cocktail using a whipping siphon or carbonator rig at 40 PSI.",
+          "michelin": "Transfer to a stainless steel carbonation keg. Pressurize with CO2 to exactly 45 PSI at -2°C. Agitate to dissolve gas. Bottle under counter-pressure."
+        },
+        "toolVariants": {
+          "tool-siphon": {
+            "beginner": "Pour the supercooled Negroni batch into your whipping siphon. Charge with 1 CO2 charger (soda charger), shake vigorously, and rest in ice bath.",
+            "professional": "Charge supercooled batch in iSi siphon with 2 CO2 chargers. Release pressure slowly to prevent foaming.",
+            "michelin": "Pour batch into siphon at -4°C. Charge with 2 CO2 chargers. Shake for 60s, rest in brine bath at -4°C for 5 minutes, then vent pressure rapidly to lock carbonation.",
+            "timer": 60
+          }
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Garnish & Serve",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Pour into a chilled glass over a large ice cube. Express an orange peel over the glass.",
+          "professional": "Serve in a double rocks glass over a clear ice block. Garnish with orange coin.",
+          "michelin": "Pour into a chilled crystal tumbler over a custom-cut -10°C clear ice sphere. Express orange essential oils, discard peel."
+        }
+      }
+    ],
+    "comparison": {
+      "baseline": [
+        {
+          "title": "Clarity Vector",
+          "desc": "Standard unclarified Negroni (cloudy red vermouth and campari dispersion)."
+        },
+        {
+          "title": "Carbonation Level",
+          "desc": "Uncarbonated, standard stir-and-dilute ice method."
+        }
+      ],
+      "test": [
+        {
+          "title": "Clarity Vector",
+          "desc": "Milk-clarified base. Proteins strip tannins and cloudiness, yielding a transparent ruby hue.",
+          "isTweak": true
+        },
+        {
+          "title": "Carbonation Level",
+          "desc": "Carbonated to 45 PSI at supercooled temperatures for sparkling mouthfeel.",
+          "isTweak": true
+        }
+      ]
+    }
+  },
+  "nitro_matcha": {
+    "projectName": "Nitro-Charged Matcha Lab",
+    "baselineName": "Whisked Matcha Latte Control v1.0",
+    "activeBatch": 2,
+    "defaultTweakCategory": "Technique",
+    "defaultTweakText": "Nitro-charging the matcha infusion using N2O to create a thick, velvety micro-foam structure.",
+    "lab": "drinks",
+    "ingredientSections": {
+      "cream": "Matcha Base",
+      "soak": "Sweetener & Liquid",
+      "assembly": "Foaming Agent & Garnish"
+    },
+    "ingredients": {
+      "cream": [
+        {
+          "name": "Ceremonial Grade Matcha",
+          "baseWeight": 4,
+          "unit": "g"
+        },
+        {
+          "name": "Water (filtered at 80°C)",
+          "baseWeight": 100,
+          "unit": "ml"
+        }
+      ],
+      "soak": [
+        {
+          "name": "Oat Milk (Barista Blend)",
+          "baseWeight": 150,
+          "unit": "ml"
+        },
+        {
+          "name": "Agave Syrup",
+          "baseWeight": 10,
+          "unit": "g"
+        }
+      ],
+      "assembly": [
+        {
+          "name": "Xanthan Gum (stabilizer)",
+          "baseWeight": 0.1,
+          "unit": "g",
+          "tweakHighlighted": true,
+          "baselineText": "No stabilizer (separated latte)",
+          "testText": "Xanthan gum emulsion stabilizer (&Delta; Tweak)"
+        }
+      ]
+    },
+    "steps": [
+      {
+        "phase": "mise-en-place",
+        "label": "Prepare Ingredients",
+        "tweakReminder": "",
+        "timer": 0,
+        "textVariants": {
+          "beginner": "Measure matcha, heat water, and chill oat milk.",
+          "professional": "Weigh matcha. Calibrate water temp to 80°C.",
+          "michelin": "Weigh ceremonial matcha. Heat mineral-calibrated water to exactly 78°C."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Matcha Hydration",
+        "tweakReminder": "",
+        "timer": 180,
+        "textVariants": {
+          "beginner": "Whisk the matcha powder and hot water together in a bowl using a bamboo whisk until frothy.",
+          "professional": "Whisk matcha in traditional chawan with chasen to suspend particles.",
+          "michelin": "Homogenize matcha and water at 10,000 RPM using a rotor-stator mixer to fully hydrate tea solids."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Milk Emulsion",
+        "tweakReminder": "",
+        "timer": 120,
+        "textVariants": {
+          "beginner": "Mix oat milk, agave syrup, and a tiny pinch of xanthan gum. Whisk until smooth.",
+          "professional": "Combine oat milk, agave, and xanthan gum. Blend to stabilize.",
+          "michelin": "Blend oat milk, agave, and xanthan gum (0.1g) to build a stable shear-thinning emulsion."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Charging & Pour",
+        "tweakReminder": "Active Delta Tweak: Nitro-charging the matcha infusion using N2O to create a thick, velvety micro-foam structure.",
+        "timer": 60,
+        "textVariants": {
+          "beginner": "Pour the mixture into a whipping siphon, charge with 1 N2O charger, and shake. Pour matcha first, then foam on top.",
+          "professional": "Pour matcha into glass. Charge sweetened milk in siphon with 1 N2O. Layer foam.",
+          "michelin": "Pour matcha over clear ice block. Discharge stabilized nitrogen-oat milk foam through a flat-tip nozzle to create a crisp layered boundary."
+        },
+        "toolVariants": {
+          "tool-siphon": {
+            "beginner": "Pour the oat milk mix into your whipping siphon. Charge with 1 N2O charger, shake well, and express slowly over the matcha base.",
+            "professional": "Charge milk base in iSi siphon with 1 N2O. Layer nitrogen foam over matcha base.",
+            "michelin": "Charge stabilized milk base in iSi whip siphon with 2 N2O canisters. Purge siphon, rest in ice bath. Express through specialized draught nozzle to build a micro-foamed head.",
+            "timer": 30
+          }
+        }
+      }
+    ],
+    "comparison": {
+      "baseline": [
+        {
+          "title": "Foam Stability",
+          "desc": "Whisked milk foam that collapses within 3 minutes of pouring."
+        },
+        {
+          "title": "Aeration gas",
+          "desc": "Atmospheric air whipped into milk."
+        }
+      ],
+      "test": [
+        {
+          "title": "Foam Stability",
+          "desc": "Xanthan-stabilized emulsion maintaining velvet head for 20+ minutes.",
+          "isTweak": true
+        },
+        {
+          "title": "Aeration gas",
+          "desc": "Pure N2O micro-bubble infusion for sweet, creamy mouthfeel without dairy.",
+          "isTweak": true
+        }
+      ]
+    }
+  },
+  "sourdough_bread": {
+    "projectName": "Sourdough Bread",
+    "baselineName": "Sourdough Bread Baseline Control v1.0",
+    "activeBatch": 1,
+    "defaultTweakCategory": "Time-Temp",
+    "defaultTweakText": "Optimizing bulk fermentation and proofing for ideal crumb structure and flavor.",
+    "ingredients": {
+      "cream": [
+        {
+          "name": "Strong Bread Flour",
+          "baseWeight": 500,
+          "unit": "g"
+        },
+        {
+          "name": "Active Sourdough Starter",
+          "baseWeight": 100,
+          "unit": "g"
+        },
+        {
+          "name": "Fine Sea Salt",
+          "baseWeight": 10,
+          "unit": "g"
+        },
+        {
+          "name": "Filtered Water (warm)",
+          "baseWeight": 375,
+          "unit": "g"
+        },
+        {
+          "name": "Rice Flour",
+          "baseWeight": 10,
+          "unit": "g"
+        }
+      ],
+      "soak": [],
+      "assembly": []
+    },
+    "steps": [
+      {
+        "phase": "mise-en-place",
+        "label": "Prepare and Hydrate Flour",
+        "timer": 0,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Initiate Autolyse",
+        "timer": 1800,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Incorporate Salt and Starter",
+        "timer": 600,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Primary Fermentation (Bulk Fermentation)",
+        "timer": 14400,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Pre-shaping",
+        "timer": 30,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Bench Rest",
+        "timer": 1800,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Final Shaping and Cold Proof Preparation",
+        "timer": 300,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Retardation Proof",
+        "timer": 43200,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Oven and Vessel Preparation",
+        "timer": 3600,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Scoring and Steamed Bake",
+        "timer": 1200,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "execution",
+        "label": "Dry Bake for Crust Development",
+        "timer": 1500,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      },
+      {
+        "phase": "assembly",
+        "label": "Final Resting",
+        "timer": 7200,
+        "tweakReminder": "",
+        "textVariants": {
+          "beginner": "Step instruction not populated.",
+          "professional": "Step instruction not populated.",
+          "michelin": "Step instruction not populated."
+        }
+      }
+    ],
+    "lab": "baking_lab",
+    "suggestedTools": [
+      "Digital Scale",
+      "Large Mixing Bowl",
+      "Bench Scraper",
+      "Banneton Basket",
+      "Dutch Oven",
+      "Bread Lame"
+    ],
+    "ingredientSections": {
+      "cream": "Cream & Flour",
+      "soak": "Soak & Liquids",
+      "assembly": "Assembly & Dusting"
+    },
+    "comparison": {
+      "baseline": [
+        {
+          "title": "Standard Formulation",
+          "desc": "Original baseline control ingredients and techniques."
+        }
+      ],
+      "test": [
+        {
+          "title": "Batch Tweak",
+          "desc": "Optimizing bulk fermentation and proofing for ideal crumb structure and flavor.",
+          "isTweak": true
+        }
+      ]
+    }
+  }
+}

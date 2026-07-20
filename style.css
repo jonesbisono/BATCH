@@ -2261,3 +2261,127 @@ body {
     background: var(--tweak-bg);
     color: var(--tweak-color);
 }
+
+/* =========================================================================
+   Sync Engine & Notebook Creator Styles
+   ========================================================================= */
+
+#addNewLabTabBtn {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--ink-subtle);
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: 2px 6px;
+    line-height: 1;
+    margin-top: 4px;
+}
+
+#addNewLabTabBtn:hover {
+    color: var(--ink-main);
+    border-color: var(--ink-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#autofillAiBtn {
+    transition: var(--transition-fast);
+}
+
+#autofillAiBtn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+#autofillAiBtn.loading svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.creator-tool-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.08);
+    color: var(--ink-muted);
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+}
+
+.theme-drinks .creator-tool-badge {
+    background: rgba(0, 242, 254, 0.08);
+    color: var(--accent);
+    border-color: rgba(0, 242, 254, 0.2);
+}
+
+.sync-status-box {
+    box-shadow: var(--shadow-sm);
+    color: var(--ink-main);
+}
+
+.sync-status-box span {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+}
+
+.badge-status {
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+}
+
+.badge-status.online {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.badge-status.offline {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+@keyframes toastSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+}
+

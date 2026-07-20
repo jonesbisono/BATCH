@@ -1,0 +1,32 @@
+[
+  {
+    "id": "tool-whisk",
+    "name": "Balloon Whisk",
+    "description": "A wire balloon whisk for manual whipping, emulsifying, and folding ingredients.",
+    "photo": null
+  },
+  {
+    "id": "tool-mixer",
+    "name": "Stand Mixer",
+    "description": "Planetary stand mixer with hook and paddle attachments for kneading and whipping.",
+    "photo": null
+  },
+  {
+    "id": "tool-doubleboiler",
+    "name": "Double Boiler Setup",
+    "description": "Bain-marie setup for gentle indirect heat, tempering chocolate, or whipping custards.",
+    "photo": null
+  },
+  {
+    "id": "tool-siphon",
+    "name": "iSi Whipping Siphon",
+    "description": "Pressurized nitrous oxide (N2O) gas charging siphon for rapid foams and infusions.",
+    "photo": null
+  },
+  {
+    "id": "tool-chambervac",
+    "name": "Chamber Vacuum Sealer",
+    "description": "Chamber sealer for fast marinating, compression, de-aerating, and uniform sheeting.",
+    "photo": null
+  }
+]

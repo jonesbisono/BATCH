@@ -18,9 +18,11 @@
         <header class="app-header">
             <div class="header-left">
                 <h1 class="brand-logo" id="brandLogo">BATCH</h1>
-                <div class="lab-switcher">
-                    <button class="lab-tab active" id="culinaryLabTab" data-lab="culinary">CULINARY LAB</button>
-                    <button class="lab-tab" id="drinksLabTab" data-lab="drinks">DRINKS LAB</button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="lab-switcher" id="labSwitcher">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                    <button class="lab-tab" id="addNewLabTabBtn" title="Create New Lab Notebook" style="font-size: 0.8rem; padding: 2px 6px; font-weight: bold; border: 1px dashed var(--border); border-radius: 4px; margin-top: 4px; line-height: 1;">+</button>
                 </div>
             </div>
             
@@ -41,6 +43,10 @@
                     <button id="openCreatorBtn" class="action-btn btn-sm secondary-btn" title="Create New Recipe">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         <span>New</span>
+                    </button>
+                    <button id="openSyncBtn" class="action-btn btn-sm secondary-btn" title="Cloud Sync Settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.2 15a8.85 8.85 0 0 0-3.3-6.1l-1.9-1.9A10 10 0 0 0 2 12h4m16 0a10 10 0 0 0-14.8-8.9L5.3 5M2 9v6h6M22 15v-6h-6"/></svg>
+                        <span>Sync</span>
                     </button>
                 </div>
             </div>
@@ -582,7 +588,13 @@
                 <div class="creator-meta-section">
                     <div class="form-row-2">
                         <div class="form-group">
-                            <label for="newRecipeName">Master Project Name</label>
+                            <label for="newRecipeName" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span>Master Project Name</span>
+                                <button type="button" id="autofillAiBtn" class="action-btn btn-sm primary-btn" style="padding: 2px 8px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                    <span id="autofillAiBtnText">Autofill with AI</span>
+                                </button>
+                            </label>
                             <input type="text" id="newRecipeName" class="styled-input" placeholder="Enter formulation name (e.g., Neapolitan Pizza, Carbonated Negroni)" required>
                         </div>
                         <div class="form-group">
@@ -607,6 +619,12 @@
                     <div class="form-group" style="margin-top: 10px;">
                         <label for="newRecipeTweakText">Initial Delta Tweak Details</label>
                         <input type="text" id="newRecipeTweakText" class="styled-input" placeholder="What variable are you testing in Batch #1?">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px; display: none;" id="creatorSuggestedToolsContainer">
+                        <label>AI Suggested Tools</label>
+                        <div id="creatorSuggestedToolsList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                            <!-- Tool badges populated dynamically -->
+                        </div>
                     </div>
                 </div>
 
@@ -705,6 +723,94 @@
             <div class="creator-modal-actions" style="margin-top: 20px;">
                 <button class="action-btn secondary-btn" id="closeToolCreatorBtn">Cancel</button>
                 <button class="action-btn primary-btn" id="saveNewToolBtn">Add to Inventory</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Modal Overlay -->
+    <div class="modal-overlay" id="syncModal">
+        <div class="modal-card creator-modal-card" style="max-width: 440px;">
+            <div class="creator-modal-header" style="position: relative;">
+                <h2>Cloud Synchronization</h2>
+                <p>Manage synchronization between your local storage and the server files.</p>
+            </div>
+            
+            <div class="creator-scroll-body" style="padding-top: 15px;">
+                <div class="sync-status-box" style="background: var(--bg); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
+                        <span style="font-weight: 600;">Connection Status:</span>
+                        <span id="syncConnectionStatus" style="font-weight: bold;">Checking...</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Local Last Updated:</span>
+                        <span id="syncLocalTime" style="font-family: monospace;">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span>Cloud Last Updated:</span>
+                        <span id="syncCloudTime" style="font-family: monospace;">-</span>
+                    </div>
+                    <div style="border-top: 1px solid var(--border); padding-top: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                        <span>Current Status:</span>
+                        <span id="syncStatusSummary" style="font-weight: bold; color: var(--accent);">-</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="action-btn primary-btn full-width" id="syncNowBtn" style="justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        <span>Sync Now (Auto-detect)</span>
+                    </button>
+                    
+                    <div style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px;">
+                        <h4 style="margin-bottom: 10px; font-family: var(--font-heading);">Manual Overrides</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="action-btn secondary-btn" id="forceUploadBtn" style="justify-content: center; font-size: 0.85rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                                <span>Force Upload</span>
+                            </button>
+                            <button class="action-btn secondary-btn" id="forceDownloadBtn" style="justify-content: center; font-size: 0.85rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                                <span>Force Download</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="creator-modal-actions" style="margin-top: 24px;">
+                <button class="action-btn secondary-btn full-width" id="closeSyncModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notebook/Lab Creator Modal Overlay -->
+    <div class="modal-overlay" id="notebookCreatorModal">
+        <div class="modal-card creator-modal-card" style="max-width: 400px;">
+            <div class="creator-modal-header">
+                <h2>New Experiment Notebook</h2>
+                <p>Create a new categorized lab folder for your formulations.</p>
+            </div>
+            
+            <div class="creator-scroll-body" style="padding-top: 10px;">
+                <form id="notebookCreatorForm" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="newNotebookName">Notebook Name</label>
+                        <input type="text" id="newNotebookName" class="styled-input" placeholder="e.g. Baking Lab, Sourdough, Coffee Chem" required>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="newNotebookTheme">Visual Style & Theme</label>
+                        <select id="newNotebookTheme" class="styled-select-sm" style="width: 100%;">
+                            <option value="culinary">Warm Analog (Culinary Lab style)</option>
+                            <option value="drinks">Sleek Cyber (Drinks Lab style)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="creator-modal-actions" style="margin-top: 24px;">
+                <button class="action-btn secondary-btn" id="closeNotebookCreatorBtn">Cancel</button>
+                <button class="action-btn primary-btn" id="saveNewNotebookBtn">Create Notebook</button>
             </div>
         </div>
     </div>

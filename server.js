@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { GoogleGenAI } = require('@google/genai');
 const ngrok = require('@ngrok/ngrok');
+const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 
@@ -12,6 +14,37 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static('./')); // Serve static frontend files
+
+const RECIPES_FILE = path.join(__dirname, 'data', 'recipes.json');
+const TOOLS_FILE = path.join(__dirname, 'data', 'tools.json');
+const NOTEBOOKS_FILE = path.join(__dirname, 'data', 'notebooks.json');
+const SYNC_FILE = path.join(__dirname, 'data', 'sync.json');
+
+function initializeDataFiles() {
+    const dataDir = path.join(__dirname, 'data');
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+    }
+    if (!fs.existsSync(RECIPES_FILE)) {
+        fs.writeFileSync(RECIPES_FILE, JSON.stringify({}, null, 2));
+    }
+    if (!fs.existsSync(TOOLS_FILE)) {
+        fs.writeFileSync(TOOLS_FILE, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(NOTEBOOKS_FILE)) {
+        const defaultNotebooks = [
+            { id: "culinary", name: "CULINARY LAB", theme: "culinary" },
+            { id: "drinks", name: "DRINKS LAB", theme: "drinks" }
+        ];
+        fs.writeFileSync(NOTEBOOKS_FILE, JSON.stringify(defaultNotebooks, null, 2));
+    }
+    if (!fs.existsSync(SYNC_FILE)) {
+        fs.writeFileSync(SYNC_FILE, JSON.stringify({ lastUpdated: Date.now() }, null, 2));
+    }
+}
+
+// Call on startup
+initializeDataFiles();
 
 const SYSTEM_PROMPT = `
 You are the greatest culinary historian and most technically, culturally and ethnically diverse chef, master of the culinary arts in all aspects, and forms, with knowledge of techniques from all over the world and cultures throughout history classic, modern and contemporary. That knowledge made you very precise to the gram and flexible enough to develop alternatives when ingredients are scarce. You guide some of your ideas based on the book from Nathan Myhrvold: Modernist Cuisine, Modernist Bread and Modernist pizza. And other references would be:
@@ -296,6 +329,136 @@ app.post('/api/adapt-steps', async (req, res) => {
     } catch (error) {
         console.error('Error adapting steps:', error);
         res.status(500).json({ error: 'Failed to adapt steps.', details: error.message });
+    }
+});
+
+app.get('/api/sync', (req, res) => {
+    try {
+        initializeDataFiles();
+        const recipes = JSON.parse(fs.readFileSync(RECIPES_FILE, 'utf8'));
+        const tools = JSON.parse(fs.readFileSync(TOOLS_FILE, 'utf8'));
+        const notebooks = JSON.parse(fs.readFileSync(NOTEBOOKS_FILE, 'utf8'));
+        const syncInfo = JSON.parse(fs.readFileSync(SYNC_FILE, 'utf8'));
+        
+        res.json({
+            lastUpdated: syncInfo.lastUpdated || 0,
+            recipes,
+            tools,
+            notebooks
+        });
+    } catch (err) {
+        console.error('Error in GET /api/sync:', err);
+        res.status(500).json({ error: 'Failed to retrieve cloud sync data.', details: err.message });
+    }
+});
+
+app.post('/api/sync', (req, res) => {
+    try {
+        initializeDataFiles();
+        const { recipes, tools, notebooks, lastUpdated } = req.body;
+        
+        if (!recipes || !tools || !notebooks) {
+            return res.status(400).json({ error: 'Recipes, tools, and notebooks are required for sync.' });
+        }
+        
+        const timestamp = lastUpdated || Date.now();
+        
+        fs.writeFileSync(RECIPES_FILE, JSON.stringify(recipes, null, 2));
+        fs.writeFileSync(TOOLS_FILE, JSON.stringify(tools, null, 2));
+        fs.writeFileSync(NOTEBOOKS_FILE, JSON.stringify(notebooks, null, 2));
+        fs.writeFileSync(SYNC_FILE, JSON.stringify({ lastUpdated: timestamp }, null, 2));
+        
+        res.json({ success: true, lastUpdated: timestamp });
+    } catch (err) {
+        console.error('Error in POST /api/sync:', err);
+        res.status(500).json({ error: 'Failed to save cloud sync data.', details: err.message });
+    }
+});
+
+app.post('/api/autofill-recipe', async (req, res) => {
+    try {
+        const { name, lab } = req.body;
+        if (!name) {
+            return res.status(400).json({ error: 'Recipe name is required.' });
+        }
+        
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ error: 'GEMINI_API_KEY is not set.' });
+        }
+        
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        
+        const systemPrompt = `
+        You are a Michelin-starred chef and master mixologist.
+        The user wants to formulate a recipe named: "${name}" for the lab type: "${lab}".
+        
+        Generate a complete recipe formulation in the BATCH application compatible JSON schema.
+        
+        Rules for ingredients:
+        - If lab is 'drinks' (or custom mixology), group into:
+          - 'cream' (Spirits, liqueurs, main brew bases)
+          - 'soak' (Sweeteners, syrups, modifiers, acid adjusters)
+          - 'assembly' (Dilution water, ice, garnishes, custom oils, final toppings)
+        - If lab is 'culinary' (or anything else), group into:
+          - 'cream' (Fats, solids, flour, dairy, dough bases)
+          - 'soak' (Liquids, marinades, syrups, soaking agents)
+          - 'assembly' (Garnishes, toppings, dustings, final touches)
+        
+        Rules for steps:
+        - Group into phases: 'mise-en-place', 'execution', 'assembly'.
+        - Provide 'timer' in seconds (number, e.g. 300 for 5 minutes). Use 0 if a timer is not needed.
+        - Provide 'tweakReminder' (e.g. "Focus on hydration level" or "Whip to ribbon stage").
+        - Provide three 'textVariants':
+          - 'beginner': simple instructions using basic tools.
+          - 'professional': elevated kitchen terminology and techniques.
+          - 'michelin': ultra-precise parameters, temperatures, and molecular terminology.
+        
+        Provide a 'suggestedTools' array containing 3-6 tool names required or recommended (e.g., ["Stand Mixer", "Whipping Siphon", "Balloon Whisk"]).
+        
+        Output MUST be a pure JSON object matching this structure:
+        {
+            "baselineName": "Baseline Control v1.0",
+            "defaultTweakCategory": "Ingredients" | "Technique" | "Time-Temp",
+            "defaultTweakText": "Testing default parameters and hydration.",
+            "ingredients": {
+                "cream": [ { "name": "...", "baseWeight": 100, "unit": "g" } ],
+                "soak": [ ... ],
+                "assembly": [ ... ]
+            },
+            "steps": [
+                {
+                    "phase": "mise-en-place" | "execution" | "assembly",
+                    "label": "Step Title",
+                    "tweakReminder": "...",
+                    "timer": 300,
+                    "textVariants": {
+                        "beginner": "...",
+                        "professional": "...",
+                        "michelin": "..."
+                    }
+                }
+            ],
+            "suggestedTools": ["Tool A", "Tool B"]
+        }
+        
+        Do not output any markdown formatting, backticks, or extra text. Pure JSON only.
+        `;
+        
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Generate recipe for: "${name}"`,
+            config: {
+                systemInstruction: systemPrompt,
+                responseMimeType: "application/json"
+            }
+        });
+        
+        let text = response.text.trim();
+        text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+        res.json(JSON.parse(text));
+    } catch (error) {
+        console.error('Error autofilling recipe:', error);
+        res.status(500).json({ error: 'Failed to autofill recipe.', details: error.message });
     }
 });
 
