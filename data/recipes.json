@@ -2,7 +2,7 @@
   "tiramisu": {
     "projectName": "The Ultimate From-Scratch Tiramisu",
     "baselineName": "Baseline Control Recipe v1.0",
-    "activeBatch": 5,
+    "activeBatch": 6,
     "defaultTweakCategory": "Ingredients",
     "defaultTweakText": "Swapping standard ladyfingers for homemade almond flour Savoiardi.",
     "lab": "culinary",
@@ -85,45 +85,20 @@
         "tweakReminder": "",
         "timer": 300,
         "textVariants": {
-          "beginner": "Fill a small pot with 1 inch of water and bring to a simmer. Set your glass bowl with egg yolks and sugar on top (making sure the bottom of the bowl does not touch the water). Whisk constantly by hand for 6 minutes until the mixture turns pale yellow and thickens.",
-          "professional": "Whisk yolks and sugar over a double boiler (bain-marie) to ribbon stage.",
-          "michelin": "Combine yolks and sugar. Mount over a water bath. Temper precisely to 82°C (180°F) using an instant-read probe thermometer. Whisk vigorously to a stable emulsified sabayon stage."
-        },
-        "toolVariants": {
-          "tool-doubleboiler": {
-            "beginner": "Place egg yolks and sugar in the top pan of your double boiler over simmering water. Whisk continuously by hand for 5 minutes until pale and ribbon-like.",
-            "professional": "Whisk yolks/sugar in double boiler to ribbon stage (approx 5 min).",
-            "michelin": "Whip yolks/sugar in double boiler. Monitor temperature to stabilize emulsion at exactly 82°C."
-          }
+          "beginner": "Place egg yolks and sugar in the top pan of your double boiler over simmering water. Whisk continuously by hand for 5 minutes until pale and ribbon-like.",
+          "professional": "Whisk yolks/sugar in double boiler to ribbon stage (approx 5 min).",
+          "michelin": "Whip yolks/sugar in double boiler. Monitor temperature to stabilize emulsion at exactly 82°C."
         }
       },
       {
         "phase": "execution",
         "label": "Prepare Whipped Cream",
         "tweakReminder": "Technique Focus: Whisk whipped cream to soft peaks to balance the rich zabaglione structure.",
-        "timer": 240,
+        "timer": 420,
         "textVariants": {
-          "beginner": "Pour cold heavy cream into a cold bowl. Whip the cream. Fold the mascarpone cheese into your cooled yolk mixture, then fold in the whipped cream in three parts.",
-          "professional": "Whip heavy cream to soft-medium peaks. Fold mascarpone into cooled zabaglione, then fold in whipped cream.",
-          "michelin": "Blend heavy cream and mascarpone base. Fold into sabayon base under gentle folding actions to retain structural density."
-        },
-        "toolVariants": {
-          "tool-whisk": {
-            "beginner": "Pour cold heavy cream into a chilled bowl. Grab your hand balloon whisk and whip vigorously by hand for 6-8 minutes until soft peaks form.",
-            "timer": 420
-          },
-          "tool-mixer": {
-            "beginner": "Pour cold heavy cream into the stand mixer bowl. Using the whisk attachment, run on medium speed for 3 minutes until soft peaks form. Do not overwhip.",
-            "professional": "Whip heavy cream in stand mixer to soft peaks on speed 6 (approx 2 minutes).",
-            "michelin": "Whip heavy cream to soft peaks in stand mixer. Fold into sabayon base immediately.",
-            "timer": 120
-          },
-          "tool-siphon": {
-            "beginner": "Mix heavy cream and softened mascarpone until smooth. Pour into whipping siphon, charge with 1 N2O charger, shake well, and express into the yolk mixture.",
-            "professional": "Whip mascarpone and cream base in an iSi siphon charged with 2 N2O canisters. Fold into zabaglione.",
-            "michelin": "Incorporate cream and mascarpone. Pass through a fine chinois, charge in an iSi whipping siphon with 2 N2O cartridges. Discharging into the sabayon base to create a highly stable, micro-aerated foam.",
-            "timer": 0
-          }
+          "beginner": "Pour cold heavy cream into a chilled bowl. Grab your hand balloon whisk and whip vigorously by hand for 6-8 minutes until soft peaks form.",
+          "professional": "Pour cold heavy cream into a chilled bowl. Grab your hand balloon whisk and whip vigorously by hand for 6-8 minutes until soft peaks form.",
+          "michelin": "Pour cold heavy cream into a chilled bowl. Grab your hand balloon whisk and whip vigorously by hand for 6-8 minutes until soft peaks form."
         }
       },
       {
@@ -135,14 +110,6 @@
           "beginner": "Pour espresso into a shallow bowl. One by one, dip the ladyfinger cookies in the coffee for just 1 second per side (do not let them get soggy). Line the bottom of your rectangular baking dish with the dipped cookies.",
           "professional": "Drag ladyfingers through espresso soak for 0.5 seconds. Layer bottom of pan immediately.",
           "michelin": "Cryo-infuse ladyfingers with espresso. Layer in pan with absolute alignment."
-        },
-        "toolVariants": {
-          "tool-chambervac": {
-            "beginner": "Place ladyfingers in a bowl. Pour espresso over them. Use your vacuum sealer chamber if available to quickly compress the cookies with espresso in 5 seconds.",
-            "professional": "Vacuum compress ladyfingers with espresso soak at 0.8 bar to inject coffee without destroying crumb structure.",
-            "michelin": "Chamber vacuum pack the homemade almond flour ladyfingers with single-origin espresso at exactly 95% vacuum. Achieves complete, instant, clean absorption with zero structure bleeding.",
-            "timer": 5
-          }
         }
       },
       {
@@ -188,7 +155,25 @@
           "desc": "Whisked for 5 minutes. Folded with soft-peak cream to accommodate heavier almond biscuits."
         }
       ]
-    }
+    },
+    "reports": [
+      {
+        "batchNumber": 5,
+        "tweakCategory": "Ingredients",
+        "deltaTweakDetails": "Swapping standard ladyfingers for homemade almond flour Savoiardi.",
+        "evaluation": {
+          "texture": "3",
+          "structure": "4",
+          "flavor": "3",
+          "moisture": "perfect",
+          "structuralIntegrity": "held",
+          "verdict": "",
+          "nextAction": "i should adjst fire level on stove",
+          "platingPhoto": null
+        },
+        "timestamp": "2026-08-21T05:38:04.377Z"
+      }
+    ]
   },
   "pizza": {
     "projectName": "Perfect Neapolitan Pizza Dough",

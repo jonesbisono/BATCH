@@ -2025,17 +2025,17 @@ body {
 }
 
 .recipe-card-large .card-batch-badge {
-    position: absolute;
-    top: 16px;
-    right: 16px;
+    align-self: flex-start;
     background: var(--accent);
     color: white;
     font-family: var(--font-sans);
     font-weight: 700;
     font-size: 0.7rem;
-    padding: 4px 8px;
+    padding: 3px 8px;
     border-radius: 12px;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
 }
 
 /* Plating Photo Upload UI */

@@ -115,7 +115,7 @@ Important rules for JSON:
 app.post('/api/generate-recipe', async (req, res) => {
     try {
         const { ingredients, type } = req.body;
-        
+
         if (!ingredients) {
             return res.status(400).json({ error: 'Ingredients are required.' });
         }
@@ -129,7 +129,7 @@ app.post('/api/generate-recipe', async (req, res) => {
 
         let systemPrompt = SYSTEM_PROMPT;
         let userInstruction = `Please create a recipe using these ingredients: ${ingredients}`;
-        
+
         if (type === 'drinks') {
             systemPrompt = `
 You are the greatest mixologist, bar director, and liquid chemist in the world, with deep knowledge of molecular gastronomy, cocktail history, coffee and tea chemistry, and modern bar techniques (drawing from Harold McGee's "On Food and Cooking", Dave Arnold's "Liquid Intelligence", and Grant Achatz's "The Aviary Cocktail Book").
@@ -206,7 +206,7 @@ Important rules for JSON:
         let recipeJsonStr = response.text.trim();
         recipeJsonStr = recipeJsonStr.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
         const recipeData = JSON.parse(recipeJsonStr);
-        
+
         // Inject or enforce correct properties
         recipeData.lab = type === 'drinks' ? 'drinks' : 'culinary';
         if (!recipeData.ingredientSections) {
@@ -220,7 +220,7 @@ Important rules for JSON:
                 assembly: "Assembly & Dusting"
             };
         }
-        
+
         res.json(recipeData);
 
     } catch (error) {
@@ -339,7 +339,7 @@ app.get('/api/sync', (req, res) => {
         const tools = JSON.parse(fs.readFileSync(TOOLS_FILE, 'utf8'));
         const notebooks = JSON.parse(fs.readFileSync(NOTEBOOKS_FILE, 'utf8'));
         const syncInfo = JSON.parse(fs.readFileSync(SYNC_FILE, 'utf8'));
-        
+
         res.json({
             lastUpdated: syncInfo.lastUpdated || 0,
             recipes,
@@ -356,18 +356,18 @@ app.post('/api/sync', (req, res) => {
     try {
         initializeDataFiles();
         const { recipes, tools, notebooks, lastUpdated } = req.body;
-        
+
         if (!recipes || !tools || !notebooks) {
             return res.status(400).json({ error: 'Recipes, tools, and notebooks are required for sync.' });
         }
-        
+
         const timestamp = lastUpdated || Date.now();
-        
+
         fs.writeFileSync(RECIPES_FILE, JSON.stringify(recipes, null, 2));
         fs.writeFileSync(TOOLS_FILE, JSON.stringify(tools, null, 2));
         fs.writeFileSync(NOTEBOOKS_FILE, JSON.stringify(notebooks, null, 2));
         fs.writeFileSync(SYNC_FILE, JSON.stringify({ lastUpdated: timestamp }, null, 2));
-        
+
         res.json({ success: true, lastUpdated: timestamp });
     } catch (err) {
         console.error('Error in POST /api/sync:', err);
@@ -381,13 +381,13 @@ app.post('/api/autofill-recipe', async (req, res) => {
         if (!name) {
             return res.status(400).json({ error: 'Recipe name is required.' });
         }
-        
+
         if (!process.env.GEMINI_API_KEY) {
             return res.status(500).json({ error: 'GEMINI_API_KEY is not set.' });
         }
-        
+
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        
+
         const systemPrompt = `
         You are a Michelin-starred chef and master mixologist.
         The user wants to formulate a recipe named: "${name}" for the lab type: "${lab}".
@@ -443,7 +443,7 @@ app.post('/api/autofill-recipe', async (req, res) => {
         
         Do not output any markdown formatting, backticks, or extra text. Pure JSON only.
         `;
-        
+
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Generate recipe for: "${name}"`,
@@ -452,7 +452,7 @@ app.post('/api/autofill-recipe', async (req, res) => {
                 responseMimeType: "application/json"
             }
         });
-        
+
         let text = response.text.trim();
         text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
         res.json(JSON.parse(text));
@@ -467,7 +467,7 @@ app.listen(port, () => {
         console.warn('WARNING: GEMINI_API_KEY is not set in .env — Pantry AI will not work until you add it.');
     }
     console.log(`BATCH Culinary Lab server running at http://localhost:${port}`);
-    
+
     // Establish ngrok tunnel
     ngrok.forward({ addr: port, authtoken_from_env: true })
         .then(listener => {

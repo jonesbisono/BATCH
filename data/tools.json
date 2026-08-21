@@ -28,5 +28,11 @@
     "name": "Chamber Vacuum Sealer",
     "description": "Chamber sealer for fast marinating, compression, de-aerating, and uniform sheeting.",
     "photo": null
+  },
+  {
+    "id": "tool-custom-1787290455801",
+    "name": "Spatula",
+    "description": "Just for flipping.",
+    "photo": null
   }
 ]
