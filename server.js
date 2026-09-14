@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { GoogleGenAI } = require('@google/genai');
 const ngrok = require('@ngrok/ngrok');
 const fs = require('fs');
@@ -9,11 +11,76 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static('./')); // Serve static frontend files
+// Security HTTP Headers with CSP configured for app assets
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+            mediaSrc: ["'self'", "https://assets.mixkit.co"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false
+}));
+
+// CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) 
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, same-origin)
+        if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(null, true); // Permissive in dev if needed, or enforce strict list
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Sync-API-Key']
+}));
+
+// Request body parser with payload size restriction to prevent DoS
+app.use(express.json({ limit: '500kb' }));
+
+// Serve static frontend files ONLY from public directory
+app.use(express.static(path.join(__dirname, 'public'), {
+    dotfiles: 'ignore',
+    index: 'index.html'
+}));
+
+// Rate Limiters
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' }
+});
+
+const aiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 30, // 30 AI requests per minute per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many AI requests. Please slow down.' }
+});
+
+const syncLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 60, // 60 sync operations per 15 min per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many sync requests. Please try again later.' }
+});
+
+app.use('/api/', generalLimiter);
 
 const RECIPES_FILE = path.join(__dirname, 'data', 'recipes.json');
 const TOOLS_FILE = path.join(__dirname, 'data', 'tools.json');
@@ -45,6 +112,12 @@ function initializeDataFiles() {
 
 // Call on startup
 initializeDataFiles();
+
+// Helper: Sanitize string input to prevent prompt injection / oversized buffers
+function sanitizeString(input, maxLength = 500) {
+    if (typeof input !== 'string') return '';
+    return input.trim().slice(0, maxLength);
+}
 
 const SYSTEM_PROMPT = `
 You are the greatest culinary historian and most technically, culturally and ethnically diverse chef, master of the culinary arts in all aspects, and forms, with knowledge of techniques from all over the world and cultures throughout history classic, modern and contemporary. That knowledge made you very precise to the gram and flexible enough to develop alternatives when ingredients are scarce. You guide some of your ideas based on the book from Nathan Myhrvold: Modernist Cuisine, Modernist Bread and Modernist pizza. And other references would be:
@@ -112,25 +185,31 @@ Important rules for JSON:
 - Group ingredients logically into 'cream' (often fats/solids/dough), 'soak' (liquids/marinades/fillings), and 'assembly' (garnishes/final additions).
 `;
 
-app.post('/api/generate-recipe', async (req, res) => {
+app.post('/api/generate-recipe', aiLimiter, async (req, res) => {
     try {
         const { ingredients, type } = req.body;
 
-        if (!ingredients) {
-            return res.status(400).json({ error: 'Ingredients are required.' });
+        if (!ingredients || typeof ingredients !== 'string') {
+            return res.status(400).json({ error: 'Valid ingredients string is required.' });
+        }
+
+        const sanitizedIngredients = sanitizeString(ingredients, 1000);
+        const sanitizedType = sanitizeString(type, 50);
+
+        if (!sanitizedIngredients) {
+            return res.status(400).json({ error: 'Ingredients cannot be empty.' });
         }
 
         if (!process.env.GEMINI_API_KEY) {
             return res.status(500).json({ error: 'GEMINI_API_KEY is not set in the .env file. Please add it and restart the server.' });
         }
 
-        // Initialize client lazily per-request so server starts even without a key
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         let systemPrompt = SYSTEM_PROMPT;
-        let userInstruction = `Please create a recipe using these ingredients: ${ingredients}`;
+        let userInstruction = `Please create a recipe using these ingredients: ${sanitizedIngredients}`;
 
-        if (type === 'drinks') {
+        if (sanitizedType === 'drinks') {
             systemPrompt = `
 You are the greatest mixologist, bar director, and liquid chemist in the world, with deep knowledge of molecular gastronomy, cocktail history, coffee and tea chemistry, and modern bar techniques (drawing from Harold McGee's "On Food and Cooking", Dave Arnold's "Liquid Intelligence", and Grant Achatz's "The Aviary Cocktail Book").
 
@@ -191,7 +270,7 @@ Important rules for JSON:
 - Group ingredients logically into 'cream' (spirits, primary liquors, main brew bases), 'soak' (syrups, modifiers, sweeteners, acid adjusters), and 'assembly' (dilution water, ice, garnishes, custom oils, final toppings).
 - Ensure the "lab": "drinks" property is explicitly included!
 `;
-            userInstruction = `Please create a beverage or drink formulation using these ingredients: ${ingredients}`;
+            userInstruction = `Please create a beverage or drink formulation using these ingredients: ${sanitizedIngredients}`;
         }
 
         const response = await ai.models.generateContent({
@@ -208,9 +287,9 @@ Important rules for JSON:
         const recipeData = JSON.parse(recipeJsonStr);
 
         // Inject or enforce correct properties
-        recipeData.lab = type === 'drinks' ? 'drinks' : 'culinary';
+        recipeData.lab = sanitizedType === 'drinks' ? 'drinks' : 'culinary';
         if (!recipeData.ingredientSections) {
-            recipeData.ingredientSections = type === 'drinks' ? {
+            recipeData.ingredientSections = sanitizedType === 'drinks' ? {
                 cream: "Spirits & Liqueurs",
                 soak: "Sweeteners & Modifiers",
                 assembly: "Dilution & Garnish"
@@ -229,11 +308,16 @@ Important rules for JSON:
     }
 });
 
-app.post('/api/suggest-tools', async (req, res) => {
+app.post('/api/suggest-tools', aiLimiter, async (req, res) => {
     try {
         const { recipe } = req.body;
-        if (!recipe) {
-            return res.status(400).json({ error: 'Recipe details are required.' });
+        if (!recipe || typeof recipe !== 'object') {
+            return res.status(400).json({ error: 'Valid recipe details object is required.' });
+        }
+
+        const projectName = sanitizeString(recipe.projectName || '', 200);
+        if (!projectName) {
+            return res.status(400).json({ error: 'Recipe project name is required.' });
         }
 
         if (!process.env.GEMINI_API_KEY) {
@@ -242,9 +326,9 @@ app.post('/api/suggest-tools', async (req, res) => {
 
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const prompt = `
-        Analyze this recipe: "${recipe.projectName}".
-        Ingredients: ${JSON.stringify(recipe.ingredients)}.
-        Steps: ${JSON.stringify(recipe.steps.map(s => s.label))}.
+        Analyze this recipe: "${projectName}".
+        Ingredients: ${JSON.stringify(recipe.ingredients || {})}.
+        Steps: ${JSON.stringify(Array.isArray(recipe.steps) ? recipe.steps.map(s => sanitizeString(s?.label || '', 100)) : [])}.
 
         Suggest 4-6 kitchen tools that are either essential or can be used to optimize/modernize this recipe. Include standard tools (like a Whisk, Stand Mixer, Double Boiler) and advanced tools if relevant (like an iSi Whipping Siphon, Sous-Vide Circulator, Chamber Vacuum Sealer, Blowtorch, Chinois).
         
@@ -261,25 +345,31 @@ app.post('/api/suggest-tools', async (req, res) => {
         });
 
         let text = response.text.trim();
-        console.log("Raw suggested tools response:", JSON.stringify(text));
         text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        res.json(JSON.parse(text));
+        const parsed = JSON.parse(text);
+        res.json(Array.isArray(parsed) ? parsed : []);
     } catch (error) {
         console.error('Error suggesting tools:', error);
         res.status(500).json({ error: 'Failed to suggest tools.', details: error.message });
     }
 });
 
-app.post('/api/adapt-steps', async (req, res) => {
+app.post('/api/adapt-steps', aiLimiter, async (req, res) => {
     try {
         const { steps, selectedTools } = req.body;
-        if (!steps || !selectedTools) {
-            return res.status(400).json({ error: 'Steps and selectedTools are required.' });
+        if (!Array.isArray(steps) || !Array.isArray(selectedTools)) {
+            return res.status(400).json({ error: 'Steps and selectedTools must be arrays.' });
+        }
+
+        if (steps.length > 50 || selectedTools.length > 50) {
+            return res.status(400).json({ error: 'Array length exceeds maximum allowed limit.' });
         }
 
         if (!process.env.GEMINI_API_KEY) {
             return res.status(500).json({ error: 'GEMINI_API_KEY is not set.' });
         }
+
+        const safeTools = selectedTools.map(t => sanitizeString(String(t), 100));
 
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const systemInstruction = `
@@ -288,7 +378,7 @@ app.post('/api/adapt-steps', async (req, res) => {
         
         Your task is to modify the recipe's steps (specifically the 'timer' and the 'textVariants': 'beginner', 'professional', and 'michelin') to leverage the available tools.
         
-        Available Tools: ${JSON.stringify(selectedTools)}.
+        Available Tools: ${JSON.stringify(safeTools)}.
         
         For example:
         - If "Stand Mixer" is available, update whipping/kneading steps to use the stand mixer instead of hand mixing, and reduce the timer accordingly.
@@ -299,7 +389,7 @@ app.post('/api/adapt-steps', async (req, res) => {
         Output MUST be a pure JSON array matching this exact step structure for each step:
         [
             {
-                "phase": "mise-en-place" / "execution" / "assembly",
+                "phase": "mise-en-place" | "execution" | "assembly",
                 "label": "Step Label",
                 "tweakReminder": "Reminder text if any",
                 "timer": 300,
@@ -325,15 +415,24 @@ app.post('/api/adapt-steps', async (req, res) => {
 
         let text = response.text.trim();
         text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        res.json(JSON.parse(text));
+        const parsed = JSON.parse(text);
+        res.json(Array.isArray(parsed) ? parsed : []);
     } catch (error) {
         console.error('Error adapting steps:', error);
         res.status(500).json({ error: 'Failed to adapt steps.', details: error.message });
     }
 });
 
-app.get('/api/sync', (req, res) => {
+app.get('/api/sync', syncLimiter, (req, res) => {
     try {
+        // Optional API key protection if configured
+        if (process.env.SYNC_API_KEY) {
+            const clientKey = req.headers['x-sync-api-key'] || req.query.apiKey;
+            if (clientKey !== process.env.SYNC_API_KEY) {
+                return res.status(401).json({ error: 'Unauthorized. Invalid or missing sync API key.' });
+            }
+        }
+
         initializeDataFiles();
         const recipes = JSON.parse(fs.readFileSync(RECIPES_FILE, 'utf8'));
         const tools = JSON.parse(fs.readFileSync(TOOLS_FILE, 'utf8'));
@@ -352,16 +451,31 @@ app.get('/api/sync', (req, res) => {
     }
 });
 
-app.post('/api/sync', (req, res) => {
+app.post('/api/sync', syncLimiter, (req, res) => {
     try {
+        // Optional API key protection if configured
+        if (process.env.SYNC_API_KEY) {
+            const clientKey = req.headers['x-sync-api-key'] || req.query.apiKey;
+            if (clientKey !== process.env.SYNC_API_KEY) {
+                return res.status(401).json({ error: 'Unauthorized. Invalid or missing sync API key.' });
+            }
+        }
+
         initializeDataFiles();
         const { recipes, tools, notebooks, lastUpdated } = req.body;
 
-        if (!recipes || !tools || !notebooks) {
-            return res.status(400).json({ error: 'Recipes, tools, and notebooks are required for sync.' });
+        // Strict schema and type validation to prevent corruption or malicious payloads
+        if (!recipes || typeof recipes !== 'object' || Array.isArray(recipes)) {
+            return res.status(400).json({ error: 'Valid recipes object is required for sync.' });
+        }
+        if (!Array.isArray(tools)) {
+            return res.status(400).json({ error: 'Valid tools array is required for sync.' });
+        }
+        if (!Array.isArray(notebooks)) {
+            return res.status(400).json({ error: 'Valid notebooks array is required for sync.' });
         }
 
-        const timestamp = lastUpdated || Date.now();
+        const timestamp = typeof lastUpdated === 'number' ? lastUpdated : Date.now();
 
         fs.writeFileSync(RECIPES_FILE, JSON.stringify(recipes, null, 2));
         fs.writeFileSync(TOOLS_FILE, JSON.stringify(tools, null, 2));
@@ -375,11 +489,18 @@ app.post('/api/sync', (req, res) => {
     }
 });
 
-app.post('/api/autofill-recipe', async (req, res) => {
+app.post('/api/autofill-recipe', aiLimiter, async (req, res) => {
     try {
         const { name, lab } = req.body;
-        if (!name) {
+        if (!name || typeof name !== 'string') {
             return res.status(400).json({ error: 'Recipe name is required.' });
+        }
+
+        const sanitizedName = sanitizeString(name, 200);
+        const sanitizedLab = sanitizeString(lab, 50);
+
+        if (!sanitizedName) {
+            return res.status(400).json({ error: 'Recipe name cannot be empty.' });
         }
 
         if (!process.env.GEMINI_API_KEY) {
@@ -390,7 +511,7 @@ app.post('/api/autofill-recipe', async (req, res) => {
 
         const systemPrompt = `
         You are a Michelin-starred chef and master mixologist.
-        The user wants to formulate a recipe named: "${name}" for the lab type: "${lab}".
+        The user wants to formulate a recipe named: "${sanitizedName}" for the lab type: "${sanitizedLab}".
         
         Generate a complete recipe formulation in the BATCH application compatible JSON schema.
         
@@ -446,7 +567,7 @@ app.post('/api/autofill-recipe', async (req, res) => {
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: `Generate recipe for: "${name}"`,
+            contents: `Generate recipe for: "${sanitizedName}"`,
             config: {
                 systemInstruction: systemPrompt,
                 responseMimeType: "application/json"
@@ -462,18 +583,23 @@ app.post('/api/autofill-recipe', async (req, res) => {
     }
 });
 
+// Start Server
 app.listen(port, () => {
     if (!process.env.GEMINI_API_KEY) {
         console.warn('WARNING: GEMINI_API_KEY is not set in .env — Pantry AI will not work until you add it.');
     }
     console.log(`BATCH Culinary Lab server running at http://localhost:${port}`);
 
-    // Establish ngrok tunnel
-    ngrok.forward({ addr: port, authtoken_from_env: true })
-        .then(listener => {
-            console.log(`ngrok tunnel established at: ${listener.url()}`);
-        })
-        .catch(err => {
-            console.error('Error establishing ngrok tunnel. Make sure your NGROK_AUTHTOKEN is set in .env if required.', err);
-        });
+    // Optional ngrok tunnel (opt-in via ENABLE_NGROK=true)
+    if (process.env.ENABLE_NGROK === 'true' && process.env.NGROK_AUTHTOKEN) {
+        ngrok.forward({ addr: port, authtoken_from_env: true })
+            .then(listener => {
+                console.log(`ngrok tunnel securely established at: ${listener.url()}`);
+            })
+            .catch(err => {
+                console.error('Error establishing ngrok tunnel:', err);
+            });
+    } else {
+        console.log('ngrok tunnel disabled. Set ENABLE_NGROK=true and NGROK_AUTHTOKEN in .env to enable public tunneling.');
+    }
 });

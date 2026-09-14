@@ -758,7 +758,11 @@ const State = {
         verdict: "",
         nextAction: "",
         platingPhoto: null
-    }
+    },
+    
+    // Recipe Creator Mode & Stepper State
+    creatorMode: "guided", // 'guided' | 'detailed'
+    creatorStep: 1 // 1: Concept, 2: Ingredients, 3: Steps, 4: Review
 };
 
 // 3. UI ELEMENT REFERENCES
@@ -777,6 +781,7 @@ const UI = {
     pantryResultsContainer: document.getElementById("pantryResultsContainer"),
     pantryRecipeList: document.getElementById("pantryRecipeList"),
     screenNavButtons: document.querySelectorAll(".nav-btn"),
+    screenNavigation: document.getElementById("screenNavigation"),
     screens: document.querySelectorAll(".workspace-screen"),
     
     // Lab switchers & Dynamic UI titles
@@ -891,6 +896,34 @@ const UI = {
     addNewStepRowBtn: document.getElementById("addNewStepRowBtn"),
     saveNewRecipeBtn: document.getElementById("saveNewRecipeBtn"),
     
+    // Guided Creator Elements
+    viewToggleGuided: document.getElementById("viewToggleGuided"),
+    viewToggleDetailed: document.getElementById("viewToggleDetailed"),
+    creatorGuidedView: document.getElementById("creatorGuidedView"),
+    creatorDetailedView: document.getElementById("creatorDetailedView"),
+    guidedRecipeName: document.getElementById("guidedRecipeName"),
+    guidedAutofillAiBtn: document.getElementById("guidedAutofillAiBtn"),
+    guidedAutofillAiBtnText: document.getElementById("guidedAutofillAiBtnText"),
+    guidedTweakCategory: document.getElementById("guidedTweakCategory"),
+    guidedRecipeBaseline: document.getElementById("guidedRecipeBaseline"),
+    guidedTweakText: document.getElementById("guidedTweakText"),
+    guidedIngredientRowsContainer: document.getElementById("guidedIngredientRowsContainer"),
+    guidedAddIngBtn: document.getElementById("guidedAddIngBtn"),
+    guidedQuickPasteToggle: document.getElementById("guidedQuickPasteToggle"),
+    guidedQuickPasteArea: document.getElementById("guidedQuickPasteArea"),
+    guidedQuickPasteInput: document.getElementById("guidedQuickPasteInput"),
+    guidedApplyQuickPasteBtn: document.getElementById("guidedApplyQuickPasteBtn"),
+    guidedCancelQuickPasteBtn: document.getElementById("guidedCancelQuickPasteBtn"),
+    guidedStepRowsContainer: document.getElementById("guidedStepRowsContainer"),
+    guidedAddStepBtn: document.getElementById("guidedAddStepBtn"),
+    guidedReviewCard: document.getElementById("guidedReviewCard"),
+    guidedBackBtn: document.getElementById("guidedBackBtn"),
+    guidedCancelBtn: document.getElementById("guidedCancelBtn"),
+    guidedNextBtn: document.getElementById("guidedNextBtn"),
+    guidedRegisterBtn: document.getElementById("guidedRegisterBtn"),
+    guidedSwitchToDetailedBtn: document.getElementById("guidedSwitchToDetailedBtn"),
+    detailedReturnToGuidedBtn: document.getElementById("detailedReturnToGuidedBtn"),
+    
     // Kitchen Tools elements
     openToolsBtn: document.getElementById("openToolsBtn"),
     toolsScreen: document.getElementById("toolsScreen"),
@@ -973,15 +1006,17 @@ async function init() {
     UI.homeScreen.style.display = "block";
     UI.mainWorkspace.style.display = "none";
     UI.goHomeBtn.style.display = "none";
+    if (UI.screenNavigation) UI.screenNavigation.style.display = "none";
     renderRecipeLibrary();
     setupVoiceRecognition();
     setupWebcamGestureMock();
     renderIngredients();
     renderComparisonTables();
     
-    // Initialize Recipe Creator rows
+    // Initialize Recipe Creator rows & guided flow
     addIngredientInputRow("", "", "g");
     addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+    initGuidedCreator();
     
     // Automatically Sync with server on startup
     try {
@@ -1049,6 +1084,7 @@ function renderRecipeLibrary(filter = "") {
             UI.homeScreen.style.display = "none";
             UI.mainWorkspace.style.display = "grid"; // Split pane uses grid
             UI.goHomeBtn.style.display = "flex";
+            if (UI.screenNavigation) UI.screenNavigation.style.display = "flex";
             
             // Re-bind screen navigation state
             UI.screens.forEach(s => s.classList.remove("active"));
@@ -1673,6 +1709,7 @@ function selectLab(labId) {
     UI.mainWorkspace.style.display = "none";
     if (UI.toolsScreen) UI.toolsScreen.style.display = "none";
     UI.goHomeBtn.style.display = "none";
+    if (UI.screenNavigation) UI.screenNavigation.style.display = "none";
     UI.homeScreen.style.display = "block";
     
     // Rerender home screen
@@ -1850,6 +1887,7 @@ function setupEventHandlers() {
         UI.mainWorkspace.style.display = "none";
         if (UI.toolsScreen) UI.toolsScreen.style.display = "none";
         UI.goHomeBtn.style.display = "none";
+        if (UI.screenNavigation) UI.screenNavigation.style.display = "none";
         UI.homeScreen.style.display = "block";
         renderRecipeLibrary(UI.recipeSearchInput.value);
     });
@@ -2047,11 +2085,36 @@ function setupEventHandlers() {
             UI.creatorSuggestedToolsList.innerHTML = "";
             State.currentSuggestedTools = null;
         }
+        // Reset to Guided view on step 1 by default
+        switchCreatorMode("guided");
+        setGuidedStep(1);
+        
+        // Reset inputs in both views
+        if (UI.guidedRecipeName) UI.guidedRecipeName.value = "";
+        if (UI.guidedTweakText) UI.guidedTweakText.value = "";
+        UI.newRecipeName.value = "";
+        UI.newRecipeTweakText.value = "";
+        
+        // Refresh default rows so placeholders update correctly
+        if (UI.creatorSuggestedToolsContainer) {
+            UI.creatorSuggestedToolsContainer.style.display = "none";
+            UI.creatorSuggestedToolsList.innerHTML = "";
+            State.currentSuggestedTools = null;
+        }
         UI.ingredientInputRowsContainer.innerHTML = "";
         addIngredientInputRow("", "", State.activeLab === "drinks" ? "ml" : "g");
         
         UI.stepInputRowsContainer.innerHTML = "";
         addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+        
+        if (UI.guidedIngredientRowsContainer) {
+            UI.guidedIngredientRowsContainer.innerHTML = "";
+            addGuidedIngredientRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+        }
+        if (UI.guidedStepRowsContainer) {
+            UI.guidedStepRowsContainer.innerHTML = "";
+            addGuidedStepRow("", "mise-en-place", "", "", "", "", 0);
+        }
         
         UI.recipeCreatorModal.classList.add("active");
     });
@@ -2120,6 +2183,7 @@ function setupEventHandlers() {
             UI.homeScreen.style.display = "none";
             UI.toolsScreen.style.display = "block";
             UI.goHomeBtn.style.display = "flex";
+            if (UI.screenNavigation) UI.screenNavigation.style.display = "none";
             renderToolsGrid();
         });
     }
@@ -2299,7 +2363,12 @@ function addStepInputRow(label, phase, defaultText, beginnerText, proText, miche
 
 // Compile and Save new custom recipe (NEW FUNCTIONALITY)
 function saveCreatedRecipe(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    
+    // If in guided mode, sync into the detailed form first
+    if (State.creatorMode === "guided") {
+        syncGuidedToDetailed();
+    }
     
     const name = UI.newRecipeName.value.trim();
     const baseline = UI.newRecipeBaseline.value.trim() || "Baseline Control v1.0";
@@ -2429,6 +2498,7 @@ function saveCreatedRecipe(e) {
     UI.homeScreen.style.display = "none";
     UI.mainWorkspace.style.display = "grid";
     UI.goHomeBtn.style.display = "flex";
+    if (UI.screenNavigation) UI.screenNavigation.style.display = "flex";
     
     UI.screens.forEach(s => s.classList.remove("active"));
     UI.screenNavButtons.forEach(btn => btn.classList.remove("active"));
@@ -2438,13 +2508,19 @@ function saveCreatedRecipe(e) {
     // Clear inputs in Creator Form
     UI.newRecipeName.value = "";
     UI.newRecipeTweakText.value = "";
+    if (UI.guidedRecipeName) UI.guidedRecipeName.value = "";
+    if (UI.guidedTweakText) UI.guidedTweakText.value = "";
     UI.ingredientInputRowsContainer.innerHTML = "";
     UI.stepInputRowsContainer.innerHTML = "";
+    if (UI.guidedIngredientRowsContainer) UI.guidedIngredientRowsContainer.innerHTML = "";
+    if (UI.guidedStepRowsContainer) UI.guidedStepRowsContainer.innerHTML = "";
     State.currentSuggestedTools = null;
     
     // Reinitialize creator default rows
-    addIngredientInputRow("", "", "g");
+    addIngredientInputRow("", "", State.activeLab === "drinks" ? "ml" : "g");
     addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+    if (UI.guidedIngredientRowsContainer) addGuidedIngredientRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+    if (UI.guidedStepRowsContainer) addGuidedStepRow("", "mise-en-place", "", "", "", "", 0);
     
     // Close modal
     UI.recipeCreatorModal.classList.remove("active");
@@ -2514,6 +2590,7 @@ function importPantryRecipe(recipeData) {
     UI.homeScreen.style.display = "none";
     UI.mainWorkspace.style.display = "grid";
     UI.goHomeBtn.style.display = "flex";
+    if (UI.screenNavigation) UI.screenNavigation.style.display = "flex";
     
     UI.screens.forEach(s => s.classList.remove("active"));
     UI.screenNavButtons.forEach(btn => btn.classList.remove("active"));
@@ -3268,6 +3345,562 @@ function populateCreatorFormWithAI(data) {
         } else {
             State.currentSuggestedTools = null;
             UI.creatorSuggestedToolsContainer.style.display = "none";
+        }
+    }
+    
+    // Sync into Guided Form automatically
+    if (UI.guidedRecipeName && UI.newRecipeName) UI.guidedRecipeName.value = UI.newRecipeName.value;
+    syncDetailedToGuided();
+}
+
+// ==========================================
+// GUIDED RECIPE CREATOR ENGINE (SIMPLIFIED FLOW)
+// ==========================================
+
+function initGuidedCreator() {
+    // Mode toggles
+    if (UI.viewToggleGuided) {
+        UI.viewToggleGuided.addEventListener("click", () => switchCreatorMode("guided"));
+    }
+    if (UI.viewToggleDetailed) {
+        UI.viewToggleDetailed.addEventListener("click", () => switchCreatorMode("detailed"));
+    }
+    if (UI.guidedSwitchToDetailedBtn) {
+        UI.guidedSwitchToDetailedBtn.addEventListener("click", () => switchCreatorMode("detailed"));
+    }
+    if (UI.detailedReturnToGuidedBtn) {
+        UI.detailedReturnToGuidedBtn.addEventListener("click", () => switchCreatorMode("guided"));
+    }
+
+    // Stepper milestone navigation
+    document.querySelectorAll(".stepper-step").forEach(el => {
+        el.addEventListener("click", () => {
+            const targetStep = parseInt(el.dataset.step);
+            if (targetStep) setGuidedStep(targetStep);
+        });
+    });
+
+    // Guided footer controls
+    if (UI.guidedNextBtn) {
+        UI.guidedNextBtn.addEventListener("click", () => setGuidedStep(State.creatorStep + 1));
+    }
+    if (UI.guidedBackBtn) {
+        UI.guidedBackBtn.addEventListener("click", () => setGuidedStep(State.creatorStep - 1));
+    }
+    if (UI.guidedCancelBtn) {
+        UI.guidedCancelBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            UI.recipeCreatorModal.classList.remove("active");
+        });
+    }
+    if (UI.guidedRegisterBtn) {
+        UI.guidedRegisterBtn.addEventListener("click", saveCreatedRecipe);
+    }
+
+    // Ingredients Quick Paste & Add
+    if (UI.guidedAddIngBtn) {
+        UI.guidedAddIngBtn.addEventListener("click", () => {
+            addGuidedIngredientRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+        });
+    }
+    if (UI.guidedQuickPasteToggle) {
+        UI.guidedQuickPasteToggle.addEventListener("click", () => {
+            if (UI.guidedQuickPasteArea) {
+                const isShown = UI.guidedQuickPasteArea.style.display === "block";
+                UI.guidedQuickPasteArea.style.display = isShown ? "none" : "block";
+                if (!isShown && UI.guidedQuickPasteInput) {
+                    UI.guidedQuickPasteInput.focus();
+                }
+            }
+        });
+    }
+    if (UI.guidedCancelQuickPasteBtn) {
+        UI.guidedCancelQuickPasteBtn.addEventListener("click", () => {
+            if (UI.guidedQuickPasteArea) UI.guidedQuickPasteArea.style.display = "none";
+        });
+    }
+    if (UI.guidedApplyQuickPasteBtn) {
+        UI.guidedApplyQuickPasteBtn.addEventListener("click", () => {
+            const rawText = UI.guidedQuickPasteInput?.value || "";
+            parseQuickPasteIngredients(rawText);
+        });
+    }
+
+    // Guided Add Step
+    if (UI.guidedAddStepBtn) {
+        UI.guidedAddStepBtn.addEventListener("click", () => {
+            addGuidedStepRow("", "execution", "", "", "", "", 0);
+        });
+    }
+
+    // Guided Autofill with AI
+    if (UI.guidedAutofillAiBtn) {
+        UI.guidedAutofillAiBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const name = UI.guidedRecipeName?.value.trim();
+            if (!name) {
+                alert("Please enter a Formulation / Recipe Name first.");
+                UI.guidedRecipeName?.focus();
+                return;
+            }
+
+            UI.guidedAutofillAiBtn.classList.add("loading");
+            if (UI.guidedAutofillAiBtnText) UI.guidedAutofillAiBtnText.textContent = "Autofilling...";
+
+            try {
+                const response = await fetch('/api/autofill-recipe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, lab: State.activeLab })
+                });
+
+                if (!response.ok) {
+                    throw new Error("API request failed with status: " + response.status);
+                }
+
+                const data = await response.json();
+                UI.newRecipeName.value = name;
+                populateCreatorFormWithAI(data);
+                showToast("Formulation generated with AI!");
+            } catch(err) {
+                console.error("Guided AI Autofill failed:", err);
+                alert("AI Autofill failed. Make sure server is running and GEMINI_API_KEY is set in .env.");
+            } finally {
+                UI.guidedAutofillAiBtn.classList.remove("loading");
+                if (UI.guidedAutofillAiBtnText) UI.guidedAutofillAiBtnText.textContent = "Autofill with AI";
+            }
+        });
+    }
+}
+
+function switchCreatorMode(mode) {
+    if (mode === "detailed") {
+        syncGuidedToDetailed();
+        if (UI.creatorGuidedView) UI.creatorGuidedView.style.display = "none";
+        if (UI.creatorDetailedView) UI.creatorDetailedView.style.display = "flex";
+        if (UI.viewToggleGuided) UI.viewToggleGuided.classList.remove("active");
+        if (UI.viewToggleDetailed) UI.viewToggleDetailed.classList.add("active");
+        State.creatorMode = "detailed";
+    } else {
+        syncDetailedToGuided();
+        if (UI.creatorGuidedView) UI.creatorGuidedView.style.display = "flex";
+        if (UI.creatorDetailedView) UI.creatorDetailedView.style.display = "none";
+        if (UI.viewToggleGuided) UI.viewToggleGuided.classList.add("active");
+        if (UI.viewToggleDetailed) UI.viewToggleDetailed.classList.remove("active");
+        State.creatorMode = "guided";
+        setGuidedStep(State.creatorStep || 1);
+    }
+}
+
+function setGuidedStep(stepNum) {
+    if (stepNum < 1) stepNum = 1;
+    if (stepNum > 4) stepNum = 4;
+
+    // Validate when advancing forward
+    if (stepNum > State.creatorStep) {
+        if (State.creatorStep === 1) {
+            const name = UI.guidedRecipeName?.value.trim();
+            if (!name) {
+                UI.guidedRecipeName?.focus();
+                showToast("Please enter a formulation name first");
+                return;
+            }
+        } else if (State.creatorStep === 2) {
+            let hasAtLeastOne = false;
+            if (UI.guidedIngredientRowsContainer) {
+                UI.guidedIngredientRowsContainer.querySelectorAll(".guided-ing-row").forEach(row => {
+                    const n = row.querySelector(".guided-ing-name")?.value.trim();
+                    if (n) hasAtLeastOne = true;
+                });
+            }
+            if (!hasAtLeastOne) {
+                showToast("Please add at least one ingredient to continue");
+                return;
+            }
+        } else if (State.creatorStep === 3) {
+            let hasAtLeastOne = false;
+            if (UI.guidedStepRowsContainer) {
+                UI.guidedStepRowsContainer.querySelectorAll(".guided-step-item").forEach(card => {
+                    const l = card.querySelector(".guided-step-label")?.value.trim();
+                    const t = card.querySelector(".guided-step-text")?.value.trim();
+                    if (l || t) hasAtLeastOne = true;
+                });
+            }
+            if (!hasAtLeastOne) {
+                showToast("Please define at least one preparation step");
+                return;
+            }
+        }
+    }
+
+    State.creatorStep = stepNum;
+
+    // Update stepper milestones
+    document.querySelectorAll(".stepper-step").forEach(el => {
+        const num = parseInt(el.dataset.step);
+        el.classList.remove("active", "completed");
+        if (num < stepNum) {
+            el.classList.add("completed");
+        } else if (num === stepNum) {
+            el.classList.add("active");
+        }
+    });
+
+    // Update visible step pane
+    document.querySelectorAll(".guided-step-pane").forEach(pane => pane.classList.remove("active"));
+    const activePane = document.getElementById(`guidedStepPane${stepNum}`);
+    if (activePane) activePane.classList.add("active");
+
+    // Update footer buttons
+    if (UI.guidedBackBtn) {
+        UI.guidedBackBtn.style.display = stepNum === 1 ? "none" : "inline-flex";
+    }
+    if (UI.guidedNextBtn) {
+        if (stepNum === 1) {
+            UI.guidedNextBtn.style.display = "inline-flex";
+            UI.guidedNextBtn.textContent = "Next: Ingredients →";
+        } else if (stepNum === 2) {
+            UI.guidedNextBtn.style.display = "inline-flex";
+            UI.guidedNextBtn.textContent = "Next: Method & Steps →";
+        } else if (stepNum === 3) {
+            UI.guidedNextBtn.style.display = "inline-flex";
+            UI.guidedNextBtn.textContent = "Next: Review Formulation →";
+        } else if (stepNum === 4) {
+            UI.guidedNextBtn.style.display = "none";
+        }
+    }
+    if (UI.guidedRegisterBtn) {
+        UI.guidedRegisterBtn.style.display = stepNum === 4 ? "inline-flex" : "none";
+    }
+
+    if (stepNum === 4) {
+        renderGuidedReview();
+    }
+}
+
+function addGuidedIngredientRow(name = "", weight = "", unit = "", section = "cream") {
+    if (!UI.guidedIngredientRowsContainer) return;
+    const row = document.createElement("div");
+    row.className = "guided-ing-row";
+    
+    const label1 = State.activeLab === "drinks" ? "Section 1 (Spirits / Base)" : "Section 1 (Cream / Flour)";
+    const label2 = State.activeLab === "drinks" ? "Section 2 (Sweeteners / Modifiers)" : "Section 2 (Soak / Liquid)";
+    const label3 = State.activeLab === "drinks" ? "Section 3 (Garnish / Dilution)" : "Section 3 (Assembly)";
+    
+    const defaultUnit = unit || (State.activeLab === "drinks" ? "ml" : "g");
+
+    row.innerHTML = `
+        <div style="flex: 2;">
+            <input type="text" class="styled-input guided-ing-name" placeholder="e.g. ${State.activeLab === 'drinks' ? 'London Dry Gin' : 'Bread Flour'}" value="${name}">
+        </div>
+        <div style="flex: 1;">
+            <input type="number" class="styled-input guided-ing-weight" placeholder="e.g. ${State.activeLab === 'drinks' ? '45' : '500'}" value="${weight}">
+        </div>
+        <div style="flex: 0.8;">
+            <input type="text" class="styled-input guided-ing-unit" placeholder="g" value="${defaultUnit}">
+        </div>
+        <div style="flex: 1.5;">
+            <select class="styled-select-sm guided-ing-sec" style="width: 100%;">
+                <option value="cream" ${section === 'cream' ? 'selected' : ''}>${label1}</option>
+                <option value="soak" ${section === 'soak' ? 'selected' : ''}>${label2}</option>
+                <option value="assembly" ${section === 'assembly' ? 'selected' : ''}>${label3}</option>
+            </select>
+        </div>
+        <button type="button" class="remove-row-btn guided-remove-ing-btn" title="Remove Ingredient" style="width: 30px;">&times;</button>
+    `;
+
+    row.querySelector(".guided-remove-ing-btn").addEventListener("click", () => {
+        row.remove();
+        if (UI.guidedIngredientRowsContainer.children.length === 0) {
+            addGuidedIngredientRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+        }
+    });
+
+    UI.guidedIngredientRowsContainer.appendChild(row);
+}
+
+function addGuidedStepRow(label = "", phase = "mise-en-place", defaultText = "", beginnerText = "", proText = "", michelinText = "", timer = 0) {
+    if (!UI.guidedStepRowsContainer) return;
+    const card = document.createElement("div");
+    card.className = "guided-step-item";
+    
+    const stepCount = UI.guidedStepRowsContainer.children.length + 1;
+    const primaryText = defaultText || beginnerText || proText || "";
+
+    card.innerHTML = `
+        <div class="guided-step-item-header">
+            <span class="guided-step-item-num">Step <span class="step-idx">${stepCount}</span></span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="guided-step-advanced-toggle">⚙️ Advanced Calibrations</button>
+                <button type="button" class="remove-row-btn guided-remove-step-btn" title="Remove Step">&times; Remove</button>
+            </div>
+        </div>
+        
+        <div class="step-row-flex" style="display: grid; grid-template-columns: 1.5fr 1fr 90px; gap: 8px;">
+            <div class="form-group">
+                <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Step Label</label>
+                <input type="text" class="styled-input guided-step-label" placeholder="e.g. Autolyse, Whip Sabayon, Emulsify..." value="${label}">
+            </div>
+            <div class="form-group">
+                <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Phase</label>
+                <select class="styled-select-sm guided-step-phase" style="width: 100%;">
+                    <option value="mise-en-place" ${phase === 'mise-en-place' ? 'selected' : ''}>Mise en Place</option>
+                    <option value="execution" ${phase === 'execution' ? 'selected' : ''}>Execution</option>
+                    <option value="assembly" ${phase === 'assembly' ? 'selected' : ''}>Assembly</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Timer (sec)</label>
+                <input type="number" class="styled-input guided-step-timer" placeholder="0" value="${timer}">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 4px;">
+            <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Directions & Method</label>
+            <textarea class="styled-textarea guided-step-text" placeholder="Describe step instructions clearly..." style="min-height: 52px;">${primaryText}</textarea>
+        </div>
+
+        <!-- Collapsible Advanced Drawer for 3 Tiers -->
+        <div class="guided-step-advanced-drawer">
+            <div class="form-group">
+                <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Tweak Reminder (Delta Highlight)</label>
+                <input type="text" class="styled-input guided-step-tweak" placeholder="e.g. Active Delta Tweak reminder..." value="${defaultText && defaultText !== primaryText ? defaultText : ''}">
+            </div>
+            <div class="form-group">
+                <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Restaurant Chef Variant</label>
+                <textarea class="styled-textarea guided-step-pro" placeholder="Professional high-speed instructions (optional)..." style="min-height: 40px;">${proText}</textarea>
+            </div>
+            <div class="form-group">
+                <label style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--ink-subtle);">Michelin Lab Variant</label>
+                <textarea class="styled-textarea guided-step-mich" placeholder="Precise temperatures, vacuum, molecular parameters (optional)..." style="min-height: 40px;">${michelinText}</textarea>
+            </div>
+        </div>
+    `;
+
+    // Advanced toggle
+    const toggleBtn = card.querySelector(".guided-step-advanced-toggle");
+    const drawer = card.querySelector(".guided-step-advanced-drawer");
+    toggleBtn.addEventListener("click", () => {
+        const isHidden = drawer.style.display === "none" || !drawer.style.display;
+        drawer.style.display = isHidden ? "flex" : "none";
+        toggleBtn.textContent = isHidden ? "▲ Hide Calibrations" : "⚙️ Advanced Calibrations";
+    });
+
+    // Remove
+    card.querySelector(".guided-remove-step-btn").addEventListener("click", () => {
+        card.remove();
+        if (UI.guidedStepRowsContainer) {
+            Array.from(UI.guidedStepRowsContainer.children).forEach((c, idx) => {
+                const idxEl = c.querySelector(".step-idx");
+                if (idxEl) idxEl.textContent = idx + 1;
+            });
+            if (UI.guidedStepRowsContainer.children.length === 0) {
+                addGuidedStepRow("", "mise-en-place", "", "", "", "", 0);
+            }
+        }
+    });
+
+    UI.guidedStepRowsContainer.appendChild(card);
+}
+
+function parseQuickPasteIngredients(text) {
+    if (!text || !text.trim()) return;
+    const lines = text.split(/[\n,;]+/);
+    let count = 0;
+    
+    // Clear initial empty row if only 1 empty row exists
+    if (UI.guidedIngredientRowsContainer && UI.guidedIngredientRowsContainer.children.length === 1) {
+        const firstRow = UI.guidedIngredientRowsContainer.children[0];
+        const firstName = firstRow.querySelector(".guided-ing-name")?.value.trim();
+        if (!firstName) {
+            UI.guidedIngredientRowsContainer.innerHTML = "";
+        }
+    }
+
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        
+        // Match patterns like "500g Flour", "350 ml Cold Water", "2 eggs", "10.5 g Salt"
+        const match = trimmed.match(/^([\d\.\/]+)\s*([a-zA-Z%]+)?\s+(?:of\s+)?(.*)$/);
+        if (match) {
+            let amount = parseFloat(match[1]) || "";
+            let unit = match[2] || (State.activeLab === "drinks" ? "ml" : "g");
+            let name = match[3] || "";
+            addGuidedIngredientRow(name, amount, unit, "cream");
+            count++;
+        } else {
+            addGuidedIngredientRow(trimmed, "", State.activeLab === "drinks" ? "ml" : "g", "cream");
+            count++;
+        }
+    });
+
+    if (count > 0) {
+        showToast(`Parsed ${count} ingredients into table!`);
+        if (UI.guidedQuickPasteArea) UI.guidedQuickPasteArea.style.display = "none";
+        if (UI.guidedQuickPasteInput) UI.guidedQuickPasteInput.value = "";
+    }
+}
+
+function renderGuidedReview() {
+    if (!UI.guidedReviewCard) return;
+    
+    const name = UI.guidedRecipeName?.value.trim() || "Untitled Formulation";
+    const baseline = UI.guidedRecipeBaseline?.value.trim() || "Baseline Control v1.0";
+    const tweakCat = UI.guidedTweakCategory?.value || "Ingredients";
+    const tweakText = UI.guidedTweakText?.value.trim() || "Calibrating baseline variables.";
+
+    // Collect ingredients
+    const ings = [];
+    if (UI.guidedIngredientRowsContainer) {
+        UI.guidedIngredientRowsContainer.querySelectorAll(".guided-ing-row").forEach(row => {
+            const iName = row.querySelector(".guided-ing-name")?.value.trim();
+            const iWeight = row.querySelector(".guided-ing-weight")?.value.trim();
+            const iUnit = row.querySelector(".guided-ing-unit")?.value.trim() || "g";
+            if (iName) {
+                ings.push(`${iName} (${iWeight || '0'}${iUnit})`);
+            }
+        });
+    }
+
+    // Collect steps & calculate total time
+    const steps = [];
+    let totalSecs = 0;
+    if (UI.guidedStepRowsContainer) {
+        UI.guidedStepRowsContainer.querySelectorAll(".guided-step-item").forEach(item => {
+            const sLabel = item.querySelector(".guided-step-label")?.value.trim() || "Instruction Step";
+            const sTimer = parseInt(item.querySelector(".guided-step-timer")?.value) || 0;
+            totalSecs += sTimer;
+            steps.push(`${sLabel} ${sTimer > 0 ? `(${Math.round(sTimer / 60)} min)` : ''}`);
+        });
+    }
+
+    const totalMinutes = Math.round(totalSecs / 60);
+
+    UI.guidedReviewCard.innerHTML = `
+        <div class="review-headline">
+            <h4>${name}</h4>
+            <span class="review-baseline">Reference: ${baseline} &bull; Initial Batch #1</span>
+        </div>
+
+        <div class="review-pill-grid">
+            <div class="review-pill">
+                <label>Active Delta Tweak</label>
+                <span style="color: var(--accent);">${tweakText}</span>
+            </div>
+            <div class="review-pill">
+                <label>Category & Scope</label>
+                <span>${tweakCat} &bull; ${State.activeLab === 'drinks' ? 'Beverage Lab' : 'Culinary Food Lab'}</span>
+            </div>
+        </div>
+
+        <div class="review-lists-split">
+            <div class="review-list-box">
+                <h5>${ings.length} Formulated Ingredients</h5>
+                <ul>
+                    ${ings.length > 0 ? ings.map(i => `<li>&bull; ${i}</li>`).join('') : '<li style="color:var(--ink-muted); font-style:italic;">No ingredients added</li>'}
+                </ul>
+            </div>
+            <div class="review-list-box">
+                <h5>${steps.length} Preparation Steps ${totalMinutes > 0 ? `(~${totalMinutes} mins)` : ''}</h5>
+                <ul>
+                    ${steps.length > 0 ? steps.map((s, idx) => `<li>${idx + 1}. ${s}</li>`).join('') : '<li style="color:var(--ink-muted); font-style:italic;">No steps added</li>'}
+                </ul>
+            </div>
+        </div>
+
+        <div style="background: var(--bg-page); border: 1px dashed var(--rule-color); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.75rem; color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center;">
+            <span>💡 <em>Need to inspect raw baseline matrices or multi-tier chef text?</em></span>
+            <button type="button" class="action-btn btn-sm secondary-btn" id="reviewSwitchToDetailedBtn">Switch to Detailed Sheet</button>
+        </div>
+    `;
+
+    const reviewSwitchBtn = document.getElementById("reviewSwitchToDetailedBtn");
+    if (reviewSwitchBtn) {
+        reviewSwitchBtn.addEventListener("click", () => switchCreatorMode("detailed"));
+    }
+}
+
+function syncGuidedToDetailed() {
+    if (UI.guidedRecipeName && UI.newRecipeName) UI.newRecipeName.value = UI.guidedRecipeName.value;
+    if (UI.guidedRecipeBaseline && UI.newRecipeBaseline) UI.newRecipeBaseline.value = UI.guidedRecipeBaseline.value;
+    if (UI.guidedTweakCategory && UI.newRecipeTweakCat) UI.newRecipeTweakCat.value = UI.guidedTweakCategory.value;
+    if (UI.guidedTweakText && UI.newRecipeTweakText) UI.newRecipeTweakText.value = UI.guidedTweakText.value;
+
+    // Sync ingredients
+    if (UI.guidedIngredientRowsContainer && UI.ingredientInputRowsContainer) {
+        UI.ingredientInputRowsContainer.innerHTML = "";
+        const rows = UI.guidedIngredientRowsContainer.querySelectorAll(".guided-ing-row");
+        rows.forEach(row => {
+            const name = row.querySelector(".guided-ing-name")?.value || "";
+            const weight = row.querySelector(".guided-ing-weight")?.value || "";
+            const unit = row.querySelector(".guided-ing-unit")?.value || "g";
+            const sec = row.querySelector(".guided-ing-sec")?.value || "cream";
+            addIngredientInputRow(name, weight, unit, sec);
+        });
+        if (UI.ingredientInputRowsContainer.children.length === 0) {
+            addIngredientInputRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+        }
+    }
+
+    // Sync steps
+    if (UI.guidedStepRowsContainer && UI.stepInputRowsContainer) {
+        UI.stepInputRowsContainer.innerHTML = "";
+        const cards = UI.guidedStepRowsContainer.querySelectorAll(".guided-step-item");
+        cards.forEach(card => {
+            const label = card.querySelector(".guided-step-label")?.value || "";
+            const phase = card.querySelector(".guided-step-phase")?.value || "mise-en-place";
+            const timer = parseInt(card.querySelector(".guided-step-timer")?.value) || 0;
+            const mainText = card.querySelector(".guided-step-text")?.value || "";
+            const tweak = card.querySelector(".guided-step-tweak")?.value || "";
+            const proText = card.querySelector(".guided-step-pro")?.value || mainText;
+            const michText = card.querySelector(".guided-step-mich")?.value || proText;
+            addStepInputRow(label, phase, tweak, mainText, proText, michText, timer);
+        });
+        if (UI.stepInputRowsContainer.children.length === 0) {
+            addStepInputRow("", "mise-en-place", "", "", "", "", 0);
+        }
+    }
+}
+
+function syncDetailedToGuided() {
+    if (UI.guidedRecipeName && UI.newRecipeName) UI.guidedRecipeName.value = UI.newRecipeName.value;
+    if (UI.guidedRecipeBaseline && UI.newRecipeBaseline) UI.guidedRecipeBaseline.value = UI.newRecipeBaseline.value;
+    if (UI.guidedTweakCategory && UI.newRecipeTweakCat) UI.guidedTweakCategory.value = UI.newRecipeTweakCat.value;
+    if (UI.guidedTweakText && UI.newRecipeTweakText) UI.guidedTweakText.value = UI.newRecipeTweakText.value;
+
+    // Sync ingredients
+    if (UI.guidedIngredientRowsContainer && UI.ingredientInputRowsContainer) {
+        UI.guidedIngredientRowsContainer.innerHTML = "";
+        const rows = UI.ingredientInputRowsContainer.querySelectorAll(".ing-input-row");
+        rows.forEach(row => {
+            const name = row.querySelector(".ing-name-input")?.value || "";
+            const weight = row.querySelector(".ing-weight-input")?.value || "";
+            const unit = row.querySelector(".ing-unit-input")?.value || "g";
+            const sec = row.querySelector(".ing-sec-input")?.value || "cream";
+            addGuidedIngredientRow(name, weight, unit, sec);
+        });
+        if (UI.guidedIngredientRowsContainer.children.length === 0) {
+            addGuidedIngredientRow("", "", State.activeLab === "drinks" ? "ml" : "g");
+        }
+    }
+
+    // Sync steps
+    if (UI.guidedStepRowsContainer && UI.stepInputRowsContainer) {
+        UI.guidedStepRowsContainer.innerHTML = "";
+        const cards = UI.stepInputRowsContainer.querySelectorAll(".step-input-card");
+        cards.forEach(card => {
+            const label = card.querySelector(".step-label-input")?.value || "";
+            const phase = card.querySelector(".step-phase-input")?.value || "mise-en-place";
+            const timer = parseInt(card.querySelector(".step-timer-input")?.value) || 0;
+            const tweak = card.querySelector(".step-tweak-input")?.value || "";
+            const begText = card.querySelector(".step-beg-input")?.value || "";
+            const proText = card.querySelector(".step-pro-input")?.value || "";
+            const michText = card.querySelector(".step-mich-input")?.value || "";
+            addGuidedStepRow(label, phase, tweak, begText, proText, michText, timer);
+        });
+        if (UI.guidedStepRowsContainer.children.length === 0) {
+            addGuidedStepRow("", "mise-en-place", "", "", "", "", 0);
         }
     }
 }
