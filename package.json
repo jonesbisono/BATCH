@@ -1,23 +1,46 @@
 {
   "name": "batch",
   "version": "1.0.0",
-  "description": "",
+  "description": "Modernist culinary and drinks experimentation lab with scientific batch formulation and AI recipe intelligence",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test test/*.test.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "culinary",
+    "mixology",
+    "modernist-cuisine",
+    "openai",
+    "gemini",
+    "batch-testing",
+    "recipes",
+    "food-science"
+  ],
+  "author": "Jones Bisonó <g.jonesbisono@gmail.com>",
+  "license": "MIT",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonesbisono/BATCH.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jonesbisono/BATCH/issues"
+  },
+  "homepage": "https://github.com/jonesbisono/BATCH#readme",
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "@google/genai": "^2.10.0",
     "@ngrok/ngrok": "^1.7.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
-    "helmet": "^8.3.0"
+    "helmet": "^8.3.0",
+    "openai": "^4.86.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
   }
 }

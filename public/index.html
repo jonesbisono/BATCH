@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>BATCH // Culinary Experimentation Lab</title>
     <!-- Google Fonts for premium analogue notebook typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -947,6 +947,15 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
                                 <span>Force Download</span>
                             </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px;">
+                        <h4 style="margin-bottom: 8px; font-family: var(--font-heading);">Gemini AI Configuration</h4>
+                        <p style="font-size: 0.8rem; color: var(--ink-muted); margin-bottom: 8px;">Direct mobile AI key for standalone recipe formulation.</p>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="geminiApiKeyInput" class="styled-input" placeholder="Gemini API Key" style="font-size: 0.85rem; font-family: monospace;">
+                            <button class="action-btn secondary-btn" id="saveGeminiApiKeyBtn" style="white-space: nowrap; font-size: 0.85rem;">Save Key</button>
                         </div>
                     </div>
                 </div>

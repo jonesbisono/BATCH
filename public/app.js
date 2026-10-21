@@ -2,6 +2,125 @@
    BATCH APPLICATION LOGIC & STATE ENGINE
    ========================================================================== */
 
+// --- STANDALONE MOBILE AI ENGINE (Direct Google Gemini 2.5 Flash Integration) ---
+function getActiveGeminiKey() {
+    return (localStorage.getItem("BATCH_GEMINI_API_KEY") || "").trim();
+}
+
+async function callDirectGeminiAPI(promptText, systemInstruction) {
+    const key = getActiveGeminiKey();
+    if (!key) throw new Error("No Gemini API key available. Configure your API key in Sync / Settings.");
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+    const payload = {
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: { responseMimeType: "application/json" }
+    };
+    if (systemInstruction) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+    }
+    const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `Gemini API HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!raw) throw new Error("Empty response from Gemini API.");
+    return JSON.parse(raw.replace(/^```json\s*/i, "").replace(/```$/, "").trim());
+}
+
+async function callStandaloneAutofill(name, lab) {
+    const isDrinks = lab === 'drinks';
+    const systemPrompt = `You are a Michelin-starred chef and master mixologist.
+The user wants to formulate a recipe named: "${name}" for the lab type: "${lab}".
+Generate a complete recipe formulation in the BATCH application compatible JSON schema.
+Rules:
+- Ingredients: cream (fats/spirits/dough bases), soak (liquids/syrups/acids), assembly (garnishes/finish).
+- Steps: phases 'mise-en-place', 'execution', 'assembly'. timer (number in seconds). tweakReminder. textVariants: beginner, professional, michelin.
+- suggestedTools: 3-6 tool names.
+Output MUST be a pure JSON object:
+{
+    "baselineName": "Baseline Control v1.0",
+    "defaultTweakCategory": "Ingredients",
+    "defaultTweakText": "Testing default parameters and hydration.",
+    "ingredients": {
+        "cream": [{ "name": "...", "baseWeight": 100, "unit": "g" }],
+        "soak": [{ "name": "...", "baseWeight": 100, "unit": "g" }],
+        "assembly": [{ "name": "...", "baseWeight": 20, "unit": "g" }]
+    },
+    "steps": [
+        {
+            "phase": "mise-en-place",
+            "label": "Preparation",
+            "tweakReminder": "",
+            "timer": 300,
+            "textVariants": { "beginner": "...", "professional": "...", "michelin": "..." }
+        }
+    ],
+    "suggestedTools": ["Stand Mixer", "Balloon Whisk", "Chef Knife"]
+}`;
+    return await callDirectGeminiAPI(`Formulate recipe "${name}" for lab "${lab}".`, systemPrompt);
+}
+
+async function callStandaloneGenerateRecipe(ingredients, lab) {
+    const isDrinks = lab === 'drinks';
+    const systemPrompt = `You are the greatest culinary and drinks master in the world.
+Generate a BATCH application compatible JSON recipe object for: ${ingredients}.
+Schema:
+{
+    "projectName": "Recipe Name",
+    "baselineName": "Baseline Control Recipe v1.0",
+    "activeBatch": 1,
+    "defaultTweakCategory": "Ingredients",
+    "defaultTweakText": "Adapting recipe based on pantry ingredients.",
+    "keywords": ["ingredient1", "ingredient2"],
+    "ingredients": {
+        "cream": [{ "name": "...", "baseWeight": 100, "unit": "g" }],
+        "soak": [{ "name": "...", "baseWeight": 100, "unit": "g" }],
+        "assembly": [{ "name": "...", "baseWeight": 20, "unit": "g" }]
+    },
+    "steps": [
+        {
+            "phase": "mise-en-place",
+            "label": "Mise en place",
+            "tweakReminder": "",
+            "timer": 180,
+            "textVariants": { "beginner": "...", "professional": "...", "michelin": "..." }
+        }
+    ],
+    "comparison": {
+        "baseline": [{ "title": "Standard Baseline", "desc": "Control ingredients." }],
+        "test": [{ "title": "Pantry Batch", "desc": "Pantry adaptation.", "isTweak": true }]
+    }
+}`;
+    const recipe = await callDirectGeminiAPI(`Please create a ${isDrinks ? 'drink' : 'culinary'} formulation using: ${ingredients}`, systemPrompt);
+    recipe.lab = isDrinks ? 'drinks' : 'culinary';
+    return recipe;
+}
+
+async function callStandaloneSuggestTools(recipe) {
+    const prompt = `Analyze this recipe: "${recipe.projectName || 'Recipe'}".
+Ingredients: ${JSON.stringify(recipe.ingredients || {})}.
+Steps: ${JSON.stringify(Array.isArray(recipe.steps) ? recipe.steps.map(s => s?.label || '') : [])}.
+Suggest 4-6 kitchen tools that are either essential or can be used to optimize this recipe.
+Output MUST be a pure JSON array of strings (the tool names). Example: ["Stand Mixer", "Balloon Whisk", "Double Boiler Setup"].`;
+    const res = await callDirectGeminiAPI(prompt);
+    return Array.isArray(res) ? res : ["Balloon Whisk", "Stand Mixer", "Double Boiler Setup"];
+}
+
+async function callStandaloneAdaptSteps(steps, selectedTools) {
+    const systemPrompt = `You are a Michelin-starred Chef.
+Modify the recipe steps (specifically 'timer' and 'textVariants': 'beginner', 'professional', 'michelin') to leverage these available tools: ${JSON.stringify(selectedTools)}.
+Output pure JSON array of steps matching the original schema.`;
+    const prompt = `Modify these steps: ${JSON.stringify(steps)}`;
+    const res = await callDirectGeminiAPI(prompt, systemPrompt);
+    return Array.isArray(res) ? res : steps;
+}
+
 // 1. DYNAMIC RECIPE DATABASE (With Adaptive Technical Instructions)
 let RECIPE_DATABASE = {
     tiramisu: {
@@ -1787,6 +1906,22 @@ function setupEventHandlers() {
             UI.syncModal.classList.remove("active");
         });
     }
+
+    const saveGeminiApiKeyBtn = document.getElementById("saveGeminiApiKeyBtn");
+    const geminiApiKeyInput = document.getElementById("geminiApiKeyInput");
+    if (saveGeminiApiKeyBtn && geminiApiKeyInput) {
+        saveGeminiApiKeyBtn.addEventListener("click", () => {
+            const val = geminiApiKeyInput.value.trim();
+            if (val) {
+                localStorage.setItem("BATCH_GEMINI_API_KEY", val);
+                showToast("Gemini API key saved to device storage!");
+            } else {
+                localStorage.removeItem("BATCH_GEMINI_API_KEY");
+                geminiApiKeyInput.value = "";
+                showToast("Gemini key cleared.");
+            }
+        });
+    }
     
     if (UI.syncNowBtn) {
         UI.syncNowBtn.addEventListener("click", async () => {
@@ -1851,22 +1986,29 @@ function setupEventHandlers() {
             UI.autofillAiBtnText.textContent = "Autofilling...";
             
             try {
-                const response = await fetch('/api/autofill-recipe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, lab: State.activeLab })
-                });
-                
-                if (!response.ok) {
-                    throw new Error("API request failed with status: " + response.status);
+                let data;
+                try {
+                    const response = await fetch('/api/autofill-recipe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, lab: State.activeLab })
+                    });
+                    if (response.ok) {
+                        data = await response.json();
+                    }
+                } catch(netErr) {
+                    console.warn("Server unreachable, falling back to direct Gemini...", netErr);
                 }
-                
-                const data = await response.json();
+
+                if (!data) {
+                    data = await callStandaloneAutofill(name, State.activeLab);
+                }
+
                 populateCreatorFormWithAI(data);
                 showToast("Form successfully populated by AI!");
             } catch(err) {
                 console.error("AI Autofill failed:", err);
-                alert("AI Autofill failed. Make sure server is running and GEMINI_API_KEY is set in .env.");
+                alert("AI Autofill failed: " + err.message);
             } finally {
                 UI.autofillAiBtn.classList.remove("loading");
                 UI.autofillAiBtnText.textContent = "Autofill with AI";
@@ -2542,21 +2684,27 @@ async function analyzePantryIngredients(text) {
     UI.pantryRecipeList.innerHTML = `<p class='ink-muted'>Consulting ${State.activeLab === 'drinks' ? 'Master Mixologist' : 'Culinary God'} via Gemini... please wait...</p>`;
 
     try {
-        const response = await fetch('/api/generate-recipe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                ingredients: text,
-                type: State.activeLab
-            })
-        });
+        let generatedRecipe;
+        try {
+            const response = await fetch('/api/generate-recipe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    ingredients: text,
+                    type: State.activeLab
+                })
+            });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error || "Failed to connect to backend API");
+            if (response.ok) {
+                generatedRecipe = await response.json();
+            }
+        } catch (netErr) {
+            console.warn("Backend not available, trying direct Gemini...", netErr);
         }
 
-        const generatedRecipe = await response.json();
+        if (!generatedRecipe) {
+            generatedRecipe = await callStandaloneGenerateRecipe(text, State.activeLab);
+        }
         
         // Render result card
         UI.pantryRecipeList.innerHTML = "";
@@ -2835,20 +2983,29 @@ async function fetchSuggestedTools(recipe) {
     }
     
     try {
-        const response = await fetch('/api/suggest-tools', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipe })
-        });
-        
-        if (response.ok) {
-            tools = await response.json();
+        let fetchedTools;
+        try {
+            const response = await fetch('/api/suggest-tools', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipe })
+            });
+            
+            if (response.ok) {
+                fetchedTools = await response.json();
+            }
+        } catch (netErr) {
+            console.warn("Backend unavailable, trying direct Gemini for tools...", netErr);
+        }
+
+        if (fetchedTools && Array.isArray(fetchedTools) && fetchedTools.length > 0) {
+            tools = fetchedTools;
         } else {
-            throw new Error("Failed to suggest tools");
+            tools = await callStandaloneSuggestTools(recipe);
         }
     } catch (e) {
-        console.warn("Backend tool suggestions failed. Falling back to local default list.", e);
-        const name = recipe.projectName.toLowerCase();
+        console.warn("Direct tool suggestions failed. Falling back to local default list.", e);
+        const name = (recipe.projectName || '').toLowerCase();
         if (name.includes("tiramisu")) {
             tools = ["Balloon Whisk", "Stand Mixer", "Double Boiler Setup", "iSi Whipping Siphon"];
         } else if (name.includes("pizza")) {
@@ -2936,28 +3093,35 @@ async function adaptRecipeStepsToTools() {
     });
     
     try {
-        const response = await fetch('/api/adapt-steps', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                steps: project.steps,
-                selectedTools: selectedToolsArray
-            })
-        });
-        
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error || "Failed to adapt steps");
+        let adaptedSteps;
+        try {
+            const response = await fetch('/api/adapt-steps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    steps: project.steps,
+                    selectedTools: selectedToolsArray
+                })
+            });
+            
+            if (response.ok) {
+                adaptedSteps = await response.json();
+            }
+        } catch (netErr) {
+            console.warn("Backend unavailable, trying direct Gemini for step adaptation...", netErr);
+        }
+
+        if (!adaptedSteps) {
+            adaptedSteps = await callStandaloneAdaptSteps(project.steps, selectedToolsArray);
         }
         
-        const adaptedSteps = await response.json();
         project.steps = adaptedSteps;
         saveUnifiedDatabase();
         
         syncCookingStep();
         
         UI.toolAdaptationPrompt.style.display = "none";
-        alert("Success: Recipe steps updated to use your available tools!");
+        showToast("Success: Recipe steps updated to use your available tools!");
     } catch (e) {
         console.error("Step adaptation error:", e);
         UI.toolAdaptationPrompt.innerHTML = `
@@ -3245,6 +3409,10 @@ async function downloadFromCloudData(cloudData) {
 function openSyncModal() {
     if (!UI.syncModal) return;
     UI.syncModal.classList.add("active");
+    const geminiApiKeyInput = document.getElementById("geminiApiKeyInput");
+    if (geminiApiKeyInput) {
+        geminiApiKeyInput.value = localStorage.getItem("BATCH_GEMINI_API_KEY") || "";
+    }
     updateSyncModalDisplay();
 }
 

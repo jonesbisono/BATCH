@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { GoogleGenAI } = require('@google/genai');
+const OpenAI = require('openai');
 const ngrok = require('@ngrok/ngrok');
 const fs = require('fs');
 const path = require('path');
@@ -119,6 +120,64 @@ function sanitizeString(input, maxLength = 500) {
     return input.trim().slice(0, maxLength);
 }
 
+// Unified AI Provider Engine (supports OpenAI GPT-4o / GPT-4o-mini and Google Gemini)
+function getAIProvider() {
+    if (process.env.AI_PROVIDER) {
+        return process.env.AI_PROVIDER.toLowerCase();
+    }
+    if (process.env.OPENAI_API_KEY) return 'openai';
+    if (process.env.GEMINI_API_KEY) return 'gemini';
+    return null;
+}
+
+async function executeAIRequest({ systemPrompt, userPrompt }) {
+    const provider = getAIProvider();
+
+    if (!provider) {
+        throw new Error('No AI provider configured. Please set OPENAI_API_KEY or GEMINI_API_KEY in your .env file.');
+    }
+
+    if (provider === 'openai') {
+        if (!process.env.OPENAI_API_KEY) {
+            throw new Error('OPENAI_API_KEY is not set in the .env file.');
+        }
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+        const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+
+        const completion = await openai.chat.completions.create({
+            model: model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7
+        });
+
+        let text = completion.choices[0]?.message?.content?.trim() || '{}';
+        text = text.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+        return JSON.parse(text);
+    } else {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('GEMINI_API_KEY is not set in the .env file.');
+        }
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+        const response = await ai.models.generateContent({
+            model: model,
+            contents: userPrompt,
+            config: {
+                systemInstruction: systemPrompt,
+                responseMimeType: 'application/json'
+            }
+        });
+
+        let text = response.text.trim();
+        text = text.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+        return JSON.parse(text);
+    }
+}
+
 const SYSTEM_PROMPT = `
 You are the greatest culinary historian and most technically, culturally and ethnically diverse chef, master of the culinary arts in all aspects, and forms, with knowledge of techniques from all over the world and cultures throughout history classic, modern and contemporary. That knowledge made you very precise to the gram and flexible enough to develop alternatives when ingredients are scarce. You guide some of your ideas based on the book from Nathan Myhrvold: Modernist Cuisine, Modernist Bread and Modernist pizza. And other references would be:
 
@@ -200,12 +259,6 @@ app.post('/api/generate-recipe', aiLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Ingredients cannot be empty.' });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not set in the .env file. Please add it and restart the server.' });
-        }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
         let systemPrompt = SYSTEM_PROMPT;
         let userInstruction = `Please create a recipe using these ingredients: ${sanitizedIngredients}`;
 
@@ -273,18 +326,10 @@ Important rules for JSON:
             userInstruction = `Please create a beverage or drink formulation using these ingredients: ${sanitizedIngredients}`;
         }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: userInstruction,
-            config: {
-                systemInstruction: systemPrompt,
-                responseMimeType: "application/json"
-            }
+        const recipeData = await executeAIRequest({
+            systemPrompt: systemPrompt,
+            userPrompt: userInstruction
         });
-
-        let recipeJsonStr = response.text.trim();
-        recipeJsonStr = recipeJsonStr.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        const recipeData = JSON.parse(recipeJsonStr);
 
         // Inject or enforce correct properties
         recipeData.lab = sanitizedType === 'drinks' ? 'drinks' : 'culinary';
@@ -320,11 +365,6 @@ app.post('/api/suggest-tools', aiLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Recipe project name is required.' });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not set.' });
-        }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const prompt = `
         Analyze this recipe: "${projectName}".
         Ingredients: ${JSON.stringify(recipe.ingredients || {})}.
@@ -336,18 +376,12 @@ app.post('/api/suggest-tools', aiLimiter, async (req, res) => {
         No markdown, no backticks, no comments.
         `;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json"
-            }
+        const parsed = await executeAIRequest({
+            systemPrompt: "You are an expert culinary and bar equipment consultant. Output must be a pure JSON array of tool names.",
+            userPrompt: prompt
         });
 
-        let text = response.text.trim();
-        text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        const parsed = JSON.parse(text);
-        res.json(Array.isArray(parsed) ? parsed : []);
+        res.json(Array.isArray(parsed) ? parsed : (parsed.tools || []));
     } catch (error) {
         console.error('Error suggesting tools:', error);
         res.status(500).json({ error: 'Failed to suggest tools.', details: error.message });
@@ -365,13 +399,8 @@ app.post('/api/adapt-steps', aiLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Array length exceeds maximum allowed limit.' });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not set.' });
-        }
-
         const safeTools = selectedTools.map(t => sanitizeString(String(t), 100));
 
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const systemInstruction = `
         You are a Michelin-starred Chef and a master of Culinary Arts. 
         You will be given a list of recipe steps and a list of kitchen tools that are currently available to the cook.
@@ -404,19 +433,12 @@ app.post('/api/adapt-steps', aiLimiter, async (req, res) => {
         No markdown, no backticks, no comments.
         `;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Modify these steps: ${JSON.stringify(steps)}`,
-            config: {
-                systemInstruction: systemInstruction,
-                responseMimeType: "application/json"
-            }
+        const parsed = await executeAIRequest({
+            systemPrompt: systemInstruction,
+            userPrompt: `Modify these steps: ${JSON.stringify(steps)}`
         });
 
-        let text = response.text.trim();
-        text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        const parsed = JSON.parse(text);
-        res.json(Array.isArray(parsed) ? parsed : []);
+        res.json(Array.isArray(parsed) ? parsed : (parsed.steps || []));
     } catch (error) {
         console.error('Error adapting steps:', error);
         res.status(500).json({ error: 'Failed to adapt steps.', details: error.message });
@@ -503,80 +525,12 @@ app.post('/api/autofill-recipe', aiLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Recipe name cannot be empty.' });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: 'GEMINI_API_KEY is not set.' });
-        }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-        const systemPrompt = `
-        You are a Michelin-starred chef and master mixologist.
-        The user wants to formulate a recipe named: "${sanitizedName}" for the lab type: "${sanitizedLab}".
-        
-        Generate a complete recipe formulation in the BATCH application compatible JSON schema.
-        
-        Rules for ingredients:
-        - If lab is 'drinks' (or custom mixology), group into:
-          - 'cream' (Spirits, liqueurs, main brew bases)
-          - 'soak' (Sweeteners, syrups, modifiers, acid adjusters)
-          - 'assembly' (Dilution water, ice, garnishes, custom oils, final toppings)
-        - If lab is 'culinary' (or anything else), group into:
-          - 'cream' (Fats, solids, flour, dairy, dough bases)
-          - 'soak' (Liquids, marinades, syrups, soaking agents)
-          - 'assembly' (Garnishes, toppings, dustings, final touches)
-        
-        Rules for steps:
-        - Group into phases: 'mise-en-place', 'execution', 'assembly'.
-        - Provide 'timer' in seconds (number, e.g. 300 for 5 minutes). Use 0 if a timer is not needed.
-        - Provide 'tweakReminder' (e.g. "Focus on hydration level" or "Whip to ribbon stage").
-        - Provide three 'textVariants':
-          - 'beginner': simple instructions using basic tools.
-          - 'professional': elevated kitchen terminology and techniques.
-          - 'michelin': ultra-precise parameters, temperatures, and molecular terminology.
-        
-        Provide a 'suggestedTools' array containing 3-6 tool names required or recommended (e.g., ["Stand Mixer", "Whipping Siphon", "Balloon Whisk"]).
-        
-        Output MUST be a pure JSON object matching this structure:
-        {
-            "baselineName": "Baseline Control v1.0",
-            "defaultTweakCategory": "Ingredients" | "Technique" | "Time-Temp",
-            "defaultTweakText": "Testing default parameters and hydration.",
-            "ingredients": {
-                "cream": [ { "name": "...", "baseWeight": 100, "unit": "g" } ],
-                "soak": [ ... ],
-                "assembly": [ ... ]
-            },
-            "steps": [
-                {
-                    "phase": "mise-en-place" | "execution" | "assembly",
-                    "label": "Step Title",
-                    "tweakReminder": "...",
-                    "timer": 300,
-                    "textVariants": {
-                        "beginner": "...",
-                        "professional": "...",
-                        "michelin": "..."
-                    }
-                }
-            ],
-            "suggestedTools": ["Tool A", "Tool B"]
-        }
-        
-        Do not output any markdown formatting, backticks, or extra text. Pure JSON only.
-        `;
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Generate recipe for: "${sanitizedName}"`,
-            config: {
-                systemInstruction: systemPrompt,
-                responseMimeType: "application/json"
-            }
+        const parsed = await executeAIRequest({
+            systemPrompt: systemPrompt,
+            userPrompt: `Generate recipe for: "${sanitizedName}"`
         });
 
-        let text = response.text.trim();
-        text = text.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
-        res.json(JSON.parse(text));
+        res.json(parsed);
     } catch (error) {
         console.error('Error autofilling recipe:', error);
         res.status(500).json({ error: 'Failed to autofill recipe.', details: error.message });
@@ -585,10 +539,13 @@ app.post('/api/autofill-recipe', aiLimiter, async (req, res) => {
 
 // Start Server
 app.listen(port, () => {
-    if (!process.env.GEMINI_API_KEY) {
-        console.warn('WARNING: GEMINI_API_KEY is not set in .env — Pantry AI will not work until you add it.');
+    const activeProvider = getAIProvider();
+    if (!activeProvider) {
+        console.warn('WARNING: Neither OPENAI_API_KEY nor GEMINI_API_KEY is set in .env — AI features will be disabled until configured.');
+    } else {
+        console.log(`BATCH Culinary Lab server running at http://localhost:${port}`);
+        console.log(`Active AI Provider: ${activeProvider.toUpperCase()}`);
     }
-    console.log(`BATCH Culinary Lab server running at http://localhost:${port}`);
 
     // Optional ngrok tunnel (opt-in via ENABLE_NGROK=true)
     if (process.env.ENABLE_NGROK === 'true' && process.env.NGROK_AUTHTOKEN) {
